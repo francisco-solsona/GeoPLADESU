@@ -37,6 +37,11 @@ const enlacesDocumentos = {
 
 // Variable para almacenar el ID del polígono seleccionado de catastro
 let selectedFeatureId = null;
+// Variable global para almacenar los atributos de zonificación
+let atributosZonificacion = {};
+let atributosCatastro = {};
+let atributosCompatibilidades = {};
+
 // Variable de la capa de catastro
 const globalCatastroUrl = 'mapbox://paco-solsona.boay2u89';
 const globalCatastroLayer = 'C22014_CATASTRO_2019-6hq1ly';
@@ -137,6 +142,7 @@ function addCustomLayers() {
             }
         });
     }
+
 }
 
 // Escuchar cuando el estilo del mapa cambia y volver a añadir las capas
@@ -195,18 +201,19 @@ map.on('load', () => {
     });
 
     // Evento de clic en la capa catastro-fill-layer
-    map.on('click', 'catastro-fill-layer', (e) => {
+    map.on('click', 'catastro-fill-layer', async (e) => {
+        
         if (e.features.length > 0) {
             const feature = e.features[0];
             selectedFeatureId = feature.properties.ID; // Guarda el ID del polígono seleccionado
 
-            // Obtiene la clave catastral
-            const claveCatastral = feature.properties.DGR_CVECAT;
-            // Obtiene la superficie del predio
-            const superficiePredio = parseFloat(feature.properties.Superficie).toFixed(1) + " m²";
+            atributosCatastro = {
+                'Clave Catastral': feature.properties.DGR_CVECAT,
+                'Superficie': parseFloat(feature.properties.Superficie).toFixed(1) + " m²",
+                'Identificador': feature.properties.ID
+            };
 
-            // Muestra la clave catastral en el HTML
-            document.getElementById('info-catastral').innerHTML = `La superficie del predio es de <strong>~${superficiePredio}</strong> y su Clave Catastral es <strong>${claveCatastral}</strong>. Puedes consultar más información sobre el predio haciendo <a href="${enlaceCatastro}" target="_blank"><strong><span class="underline">click aquí</span></strong></a>.`;
+            document.getElementById('info-catastral').innerHTML = `La superficie del predio es de <strong>~${atributosCatastro.Superficie}</strong> y su Clave Catastral es <strong>${atributosCatastro['Clave Catastral']}</strong>. Puedes consultar más información sobre el predio haciendo <a href="${enlaceCatastro}" target="_blank"><strong><span class="underline">click aquí</span></strong></a>.`;
 
             // Actualiza la capa de extrusión y borde para resaltar el polígono clickeado
             map.setFilter('catastro-extrusion', ['==', 'ID', selectedFeatureId]);
@@ -216,21 +223,206 @@ map.on('load', () => {
             const zonificacionFeatures = map.queryRenderedFeatures(e.point, { layers: ['zoning-fill-layer'] });
             
             if (zonificacionFeatures.length > 0) {
-                const zonificacionFeature = zonificacionFeatures[0]; // Primer polígono de zonificación en la intersección
-                
-                // Aquí puedes acceder a los atributos de la capa de zonificación
-                const delegacion = zonificacionFeature.properties.DELEGACION; // Cambia esto según los atributos de tu capa de zonificación
-                
-                const documento = zonificacionFeature.properties.Documento; // Cambia esto según los atributos de tu capa de zonificación
-                const enlaceDocumento = enlacesDocumentos[documento] || "#"; // Si no hay enlace, mantiene el link vacío
+                const zonificacionFeature = zonificacionFeatures[0];
 
-                // Muestra los atributos de la zona en el HTML (puedes agregar más atributos si lo deseas)
+                atributosZonificacion = {
+                    'Clave Catastral': feature.properties.DGR_CVECAT,
+                    'Superficie del predio': parseFloat(feature.properties.Superficie).toFixed(1) + " m²",
+                    'Uso del suelo': zonificacionFeature.properties.Uso,
+                    'Clave de uso general': zonificacionFeature.properties.CVE_1,
+                    'Nomenclatura': zonificacionFeature.properties.CVE_2,
+                    'Coeficiente de Ocupación del Suelo': zonificacionFeature.properties.COS__decim,
+                    'Área libre': zonificacionFeature.properties.Área_libr,
+                    'Superficie mínima de área libre': 'N/A',
+                    'Coeficiente de Utilización del Suelo': zonificacionFeature.properties.CUS__decim,
+                    'Sup. máxima de desplante': 'N/A',
+                    'Sup. máxima de construcción': 'N/A',
+                    'Niveles': zonificacionFeature.properties.NIVELES,
+                    'Altura máxima': zonificacionFeature.properties.Altura_Max,
+                    'Viviendas permitidas por hectárea': zonificacionFeature.properties.Factor__Vi,
+                    'Viviendas permitidas en el predio': 'N/A',
+                    'Frente mínimo (m2)': zonificacionFeature.properties.Frente_mí,
+                    'Sup. mínima del lote': zonificacionFeature.properties.Sup__Míni,
+                    'Programa rector': zonificacionFeature.properties.Documento,
+                };
+
+                try {
+                    const areaLibre = parseFloat(zonificacionFeature.properties.Área_libr);
+                    const superficie = parseFloat(feature.properties.Superficie);
+                    const coefOc = parseFloat(zonificacionFeature.properties.COS__decim);
+                    const niveles = parseInt(zonificacionFeature.properties.NIVELES, 10);
+                    const viviendasPorHectarea = parseFloat(zonificacionFeature.properties.Factor__Vi);
+
+                    if (!isNaN(superficie) && !isNaN(coefOc) && !isNaN(niveles)) {
+                        const supMaxDesplante = superficie * coefOc;
+                        const supMaxConstruccion = supMaxDesplante * niveles;
+                        atributosZonificacion['Sup. máxima de desplante'] = supMaxDesplante.toFixed(1) + " m²";
+                        atributosZonificacion['Sup. máxima de construcción'] = supMaxConstruccion.toFixed(1) + " m²";
+                    }
+
+                    if (!isNaN(superficie) && !isNaN(viviendasPorHectarea)) {
+                        let viviendasPermitidas = Math.floor((superficie * viviendasPorHectarea) / 10000);
+                        viviendasPermitidas = viviendasPermitidas === 0 ? 1 : viviendasPermitidas;
+                        atributosZonificacion['Viviendas permitidas en el predio'] = viviendasPermitidas;
+                    }
+
+                    if (!isNaN(superficie) && !isNaN(areaLibre)) {
+                        const superficieMinimaAreaLibre = superficie * areaLibre;
+                        atributosZonificacion['Superficie mínima de área libre'] = superficieMinimaAreaLibre.toFixed(1) + " m²";
+                    }
+                } catch (error) {
+                    console.error("Error en los cálculos de superficie:", error);
+                }
+
+                const { Documento: documento } = zonificacionFeature.properties;
+                const enlaceDocumento = enlacesDocumentos[documento] || "#";
+
                 document.getElementById('informacion-zonificacion').innerHTML = 
-                `Delegación: <strong>${delegacion}</strong> <br>
-                Documento: <a href="${enlaceDocumento}" target="_blank"><strong>${documento}</strong></a>`;
+                `El predio pertenece a la delegación 
+                <strong>${zonificacionFeature.properties.DELEGACION}</strong>, consulta el 
+                <a href="${enlaceDocumento}" target="_blank"><strong>${documento}</strong></a> <br><br>
+                Para conocer más información del predio y sus usos puedes usar el <strong>menú lateral</strong> y 
+                <strong>hacer click</strong> en el menú 'Zonificación' con este ícono 
+                <i class="icon-building" id="menu-icon-paragraph"></i>.`;
+
+                console.log("Atributos de zonificación almacenados:", atributosZonificacion);
+                console.log("Atributos de catastro almacenados:", atributosCatastro);
+            }
+
+            ////////////////////////////////////////////////////
+            //////// INTEGRAMOS USOS Y COMPATIBILIDADES ////////
+            ////////////////////////////////////////////////////
+            
+            // **INTEGRACIÓN DE FETCH PARA USOS COMPATIBLES**
+            try {
+                const response = await fetch('/datos/PMDUQ_COMPATIBILIDAD.json'); // Reemplaza con la ruta real
+                const data = await response.json();
+
+                // Extraer la información basada en el uso del suelo del predio
+                const usoSuelo = atributosZonificacion['Clave de uso general'];
+
+                // Inicializar un arreglo para almacenar las compatibilidades
+                const compatibilidades = [];
+
+                // Recorrer todas las categorías y subcategorías en el JSON
+                for (const categoria in data) {
+                    for (const subcategoria in data[categoria]) {
+                        // Verificar si el uso del suelo (usoSuelo) es compatible (tiene true)
+                        if (data[categoria][subcategoria][usoSuelo] === true) {
+                            compatibilidades.push({
+                                'Categoría': categoria,
+                                'Subcategoría': subcategoria
+                            });
+                        }
+                    }
+                }
+
+                // Almacenar en una variable global
+                atributosCompatibilidades = {
+                    'Clave de uso general': usoSuelo,
+                    'Compatibilidades': compatibilidades
+                };
+
+                console.log("Compatibilidades almacenadas:", atributosCompatibilidades);
+
+                // **ACTUALIZACIÓN AUTOMÁTICA DEL BLOQUE DE COMPATIBILIDADES**
+                if (atributosCompatibilidades && atributosCompatibilidades.Compatibilidades.length > 0) {
+                    let compatibilidadInfo = '<h2>Usos Compatibles</h2>';
+
+                    // Agrupar las subcategorías por categoría
+                    const categorias = {};
+                    atributosCompatibilidades.Compatibilidades.forEach(item => {
+                        if (!categorias[item.Categoría]) {
+                            categorias[item.Categoría] = [];
+                        }
+                        categorias[item.Categoría].push(item.Subcategoría);
+                    });
+
+                    // Generar el HTML para cada categoría y sus subcategorías
+                    for (const [categoria, subcategorias] of Object.entries(categorias)) {
+                        compatibilidadInfo += `
+                            <div class="categoria">
+                                <div class="categoria-header">
+                                    <span class="categoria-texto">${categoria}</span>
+                                    <span class="toggle-arrow">▼</span>
+                                </div>
+                                <ul class="subcategoria-list" style="display: none;">
+                                    ${subcategorias.map(sub => `<li>${sub}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
+
+                    // Insertar el HTML en el bloque de compatibilidades
+                    document.getElementById('info-compatible-block').innerHTML = compatibilidadInfo;
+
+                    // Agregar eventos para mostrar/ocultar subcategorías
+                    document.querySelectorAll('.categoria-header').forEach(header => {
+                        header.addEventListener('click', () => {
+                            const subcategoriaList = header.nextElementSibling;
+                            const toggleArrow = header.querySelector('.toggle-arrow');
+                            if (subcategoriaList.style.display === 'none' || subcategoriaList.style.display === '') {
+                                subcategoriaList.style.display = 'block'; // Mostrar subcategorías
+                                toggleArrow.textContent = '▲'; // Cambiar el ícono a una flecha hacia arriba
+                            } else {
+                                subcategoriaList.style.display = 'none'; // Ocultar subcategorías
+                                toggleArrow.textContent = '▼'; // Cambiar el ícono a una flecha hacia abajo
+                            }
+                        });
+                    });
+                } else {
+                    document.getElementById('info-compatible-block').innerHTML = '<p>No se encontraron usos compatibles para este predio.</p>';
+                }
+
+            } catch (error) {
+                console.error("Error al obtener compatibilidades:", error);
+            }
+
+
+            ////////////////////////////////////////////////////
+            ////// ACTUALIZACION DINAMICA DE ZONIFICACION //////
+            ////////////////////////////////////////////////////
+            if (atributosZonificacion && Object.keys(atributosZonificacion).length > 0) {
+                let zonificacionInfo = '<h2>Información de Zonificación</h2>';
+                for (const [clave, valor] of Object.entries(atributosZonificacion)) {
+                    zonificacionInfo += `<p><strong>${clave}:</strong> ${valor}</p>`;
+                }
+                document.getElementById('info-zoning-block').innerHTML = zonificacionInfo;
+            } else {
+                document.getElementById('info-zoning-block').innerHTML = '<p>No se encontró información de zonificación para este predio.</p>';
             }
         }
     });
+
+    ////////////////////////////////////////////
+    ///// CONTROLAMOS MENU DE ZONIFICACION /////
+    ////////////////////////////////////////////
+    
+    // Función para manejar el clic de los botones
+    function handleButtonClick(blockId) {
+        // Cerrar cualquier otro bloque activo
+        const infoBlocks = document.querySelectorAll('.info-block');
+        infoBlocks.forEach(block => {
+            block.style.display = 'none';  // Ocultar todos los bloques
+        });
+
+        // Mostrar el bloque de información correspondiente
+        const targetBlock = document.getElementById(blockId);
+        if (targetBlock) {
+            targetBlock.style.display = 'block'; // Mostrar el bloque específico
+        }
+    }
+
+    // Asignar la función a los botones
+    document.getElementById('predio-option-a').addEventListener('click', () => {
+        handleButtonClick('info-zoning-block'); // Bloque para predio-option-a
+    });
+
+    document.getElementById('predio-option-b').addEventListener('click', () => {
+        handleButtonClick('info-compatible-block'); // Bloque para predio-option-b (cambia el ID según corresponda)
+    });
+
+
 
     // Restablecer la selección al hacer clic en otra parte del mapa
     map.on('click', (e) => {
@@ -243,7 +435,62 @@ map.on('load', () => {
     });
 });
 
+// Evento para mostrar el bloque de "¿Cómo usar?" cuando se haga clic en el botón correspondiente
+document.getElementById('tab-how-to').addEventListener('click', () => {
+    // Ocultar cualquier otro bloque activo (por ejemplo, la información de zonificación)
+    document.getElementById('info-zoning-block').style.display = 'none';
+    document.getElementById('info-catastral-block').style.display = 'none'; 
+
+    // Mostrar el bloque "¿Cómo usar?"
+    const resumenBlock = document.getElementById('resumen');
+    if (resumenBlock.style.display === 'none' || resumenBlock.style.display === '') {
+        resumenBlock.style.display = 'block'; // Mostrar el bloque
+    } else {
+        resumenBlock.style.display = 'none'; // Ocultar el bloque si ya está visible
+    }
+});
+
 ////////////////////////////////////////////
+// FUNCION PARA ESCONDER/DESPLEGAR RESUMEN //
+////////////////////////////////////////////
+
+document.addEventListener("DOMContentLoaded", function () {
+    const resumen = document.getElementById("resumen");
+    const resumenH2 = resumen.querySelector("h2");
+    const resumenTexto = resumen.querySelector("p");
+    const infoCatastralBlock = document.getElementById("info-catastral-block");
+    const toggleArrow = document.getElementById("toggle-arrow");
+
+    function checkInfoBlock() {
+        if (infoCatastralBlock.innerHTML.trim() !== "") {
+            resumenTexto.style.display = "none";
+            toggleArrow.style.transform = "rotate(-90deg)"; // Flecha a la izquierda
+        } else {
+            resumenTexto.style.display = "block";
+            toggleArrow.style.transform = "rotate(-90deg)"; // Flecha abajo
+        }
+    }
+
+    checkInfoBlock();
+
+    resumenH2.addEventListener("click", function () {
+        if (resumenTexto.style.display === "none") {
+            resumenTexto.style.display = "block";
+            toggleArrow.style.transform = "rotate(0deg)"; // Flecha abajo
+        } else {
+            resumenTexto.style.display = "none";
+            toggleArrow.style.transform = "rotate(-90deg)"; // Flecha a la izquierda
+        }
+    });
+
+    const observer = new MutationObserver(checkInfoBlock);
+    observer.observe(infoCatastralBlock, { childList: true, subtree: true });
+});
+
+
+
+
+
 // FUNCION PARA ENCENDER/APAGAR LAS CAPAS //
 ////////////////////////////////////////////
 
@@ -344,12 +591,13 @@ submenuItems.forEach(function (item) {
     });
 });
 
-// AQUI CONTROLAMOS LA RESPUESTA AL CLICK DE CADA UNO DE LOS TABS
+//////////////////////////////////////////////////
+/////// RESPUESTA AL CLICK DE LOS TABS ///////////
 document.querySelector('#tab-how-to').addEventListener('click', () => {
     toggleSubmenu('#tab-how-to');
 });
-document.querySelector('#tab-description').addEventListener('click', () => {
-    toggleSubmenu('#tab-description');
+document.querySelector('#tab-predio').addEventListener('click', () => {
+    toggleSubmenu('#tab-predio');
 });
 document.querySelector('#tab-point-info').addEventListener('click', () => {
     toggleSubmenu('#tab-point-info');
@@ -361,21 +609,30 @@ document.querySelector('#tab-download').addEventListener('click', () => {
     toggleSubmenu('#tab-download');
 });
 
-// FUNCION PARA MOSTRAR/OCULTAR SUBMENUS
+// Mantenemos la funcionalidad de toggleSubmenu para los clicks en los tabs
 function toggleSubmenu(tabId) {
     const tabContainer = document.querySelector(`${tabId}`).closest('.tab-button-container');
     const submenu = tabContainer.querySelector('.submenu');
     // Alternar visibilidad del submenu
-    submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+    if (submenu.style.display === 'none' || submenu.style.display === '') {
+        submenu.style.display = 'block';
+        submenu.style.opacity = '1'; // Aseguramos que el submenú sea visible con opacidad
+    } else {
+        submenu.style.display = 'none';
+        submenu.style.opacity = '0'; // Ocultamos el submenú con opacidad 0
+    }
     // Ocultar otros submenus
     document.querySelectorAll('.submenu').forEach((menu) => {
         if (menu !== submenu) {
             menu.style.display = 'none';
+            menu.style.opacity = '0'; // Ocultamos con opacidad para la transición
         }
     });
 }
-///////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////// FUNCIONES PARA TODOS LOS BOTONES DEL SUBMENÚ ////////////////////////////
+
+/////////////////////////////////////////////////////////////////////
+/////////// FUNCIONES PARA TODOS LOS BOTONES DEL SUBMENÚ ////////////
+/////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////
 // FUNCION PARA COMPARTIR A TRAVES DE REDES SOCIALES //

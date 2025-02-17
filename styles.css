@@ -2,26 +2,17 @@ body { margin: 0;
     padding: 0; 
     font-family: 'Montserrat', sans-serif; 
 } 
-
 #map { position: absolute; 
     top: 0; 
     bottom: 0; 
     left: 0;
-    width: 65vw;
+    width: 75vw;
     height: 100vh;
     float: left;
  } 
- hr {
-    border: 1.5px solid #707070;  /* Color y grosor de la línea */
-    margin: 20px 0;           /* Espaciado arriba y abajo de la línea */
-}
-/* Aplica el subrayado a la clase .underline */
-.underline {
-    text-decoration: underline;
-}
 .info-container {
     height: 100vh;
-    width: 35vw;
+    width: 25vw;
     top: 0; 
     right: 0;
     float: right;
@@ -46,15 +37,16 @@ body { margin: 0;
     margin-right: 10px;
     
 }
+
 .info-block h2{
     font-size: 18px;
     text-align: left;
     justify-content: flex-start;
     margin-left: 20px;
     margin-right: 10px;
-    padding-top: 5PX;
 }
-.info-block p{
+
+.info-block p {
     font-size: 14px;
     text-align: justify;
     justify-content:flex-start;
@@ -63,6 +55,57 @@ body { margin: 0;
     margin-left: 15px;
     margin-right: 15px;
 }
+#info-zoning-block {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    width: 100%;
+    display: none;
+}
+.info-zoning-block h2{
+    font-size: 18px;
+    text-align: left;
+    justify-content: flex-start;
+    margin-left: 20px;
+    margin-right: 10px;
+}
+#info-zoning-block p {
+    display: block;
+    font-size: 14px;
+    text-align: justify;
+    justify-content:flex-start;
+    line-height: 1.5;
+    margin-left: 35px;
+    /* margin-right: 15px; */
+    margin-top: -10px;
+    margin-bottom: -10px;
+    white-space: normal;
+}
+hr {
+    border: 1.5px solid #707070;  /* Color y grosor de la línea */
+    margin: 20px 0;           /* Espaciado arriba y abajo de la línea */
+}
+/* Aplica el subrayado a la clase .underline */
+.underline {
+    text-decoration: underline;
+}
+#toggle-arrow {
+    display: inline-block;
+    margin-left: 8px;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+a:active, a:focus {
+    color: #ffffff; /* Un gris claro que resalte en el fondo negro */
+}
+a {
+    color: #ffffff; /* Color original del enlace */
+    text-decoration: underline;
+}
+
+a:visited {
+    color: #06c5ff; /* Color más claro después de ser clickeado */
+}
+
 /* //////////////////////////////////////
 //////// FUNCION PARA EL HEADER ////////
 ////////////////////////////////////// */
@@ -143,20 +186,25 @@ body { margin: 0;
 #menu-icon { /* El tamaño de los iconos de fontawesome se ajustan con fon-size */
     font-size: 2vw;
 }
+#menu-icon-paragraph {
+    font-size: 1.2em; /* Ajusta el tamaño del ícono */
+    margin-left: 5px; /* Espacio entre el texto y el ícono */
+    vertical-align: middle; /* Alineación con el texto */
+}
 .submenu {
     opacity: 0;
     pointer-events: all;
     position: absolute;
-    left: 3vw; 
-    top: 0;
-    width: 150px;
+    left: 4.1vw; 
+    top: 0px;
+    width: auto;
     max-width: 250px;
     background-color: #222222;
     border: 1px solid #444;
     border-radius: 10px;
     z-index: 1000;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
 }
 /* Estilos del título del submenú */
 .submenu-title {
@@ -185,13 +233,11 @@ body { margin: 0;
     margin-right: 10px; /* Espacio entre ícono y texto */
     margin-left: 10px; 
 }
-
 /* Ajustes para íconos en submenús */
 .submenu .submenu-item i {
     font-size: 20px;
     margin-left: 10px; 
 }
-
 /* Flexbox para submenu-item y alineación horizontal */
 .submenu .submenu-item {
     display: flex;
@@ -201,7 +247,6 @@ body { margin: 0;
     justify-content: flex-start; 
     text-align: left; 
 }
-
 .submenu .submenu-item i,
 .submenu .submenu-item img {
     flex-shrink: 0; 
@@ -218,7 +263,6 @@ body { margin: 0;
     flex-direction: row; /* Mantén los botones en una fila */
     gap: 10px; /* Espaciado entre botones */
 }
-
 .layer-button {
     width: 40px; /* Ajusta el tamaño deseado */
     height: 40px; /* Hace que el botón sea cuadrado */
@@ -231,17 +275,14 @@ body { margin: 0;
     cursor: pointer; /* Cambia el cursor al pasar el mouse */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Sombra */
 }
-
 .layer-button img {
     width: 30px; /* Ajusta el tamaño del ícono */
     height: auto; /* Mantiene la proporción */
     filter: invert(100%); /* Cambia el color a blanco */
 }
-
 .layer-button:hover {
     background-color: #555; /* Fondo más claro al pasar el mouse */
 }
-
 .layer-button[data-tooltip]:hover::after {
     content: attr(data-tooltip); /* Muestra el texto del atributo data-tooltip */
     position: absolute;
@@ -255,9 +296,9 @@ body { margin: 0;
     white-space: nowrap;
     z-index: 1001;
 }
-#base-map-toggle {
-    width: 40px; /* Ajusta el tamaño deseado */
-    height: 40px; /* Hace que el botón sea cuadrado */
+#map-control-icon {
+    width: 10vw; /* Ajusta el tamaño deseado */
+    height: 2.4vh; /* Hace que el botón sea cuadrado */
     font-size: 24px; /* Aumenta el tamaño del ícono o texto */
     border-radius: 50%; /* Opcional: convierte el botón en un círculo */
     align-items: center;
@@ -265,7 +306,7 @@ body { margin: 0;
     color: white; /* Color del texto */
     border: none; /* Sin borde */
     cursor: pointer; /* Cambia el cursor al pasar sobre él */
-    padding-bottom: 4.5px;
+    /* padding-bottom: 4.5px; */
 }
 /* //////////////////////////////////////
 ///////// FUNCION PARA EL MENU //////////
@@ -287,8 +328,8 @@ body { margin: 0;
 .side-tabs .tab-button::after {
     content: attr(data-tooltip); /* Muestra el contenido del atributo data-tooltip */
     position: absolute;
-    bottom: 100%; /* Posiciona el tooltip encima del botón */
-    left: 50%;
+    bottom: 100%; 
+    /* left: 50%; */
     transform: translateX(-50%);
     background-color: black;
     color: white;
@@ -336,15 +377,56 @@ body { margin: 0;
 .submenu-item:hover {
     background-color: #555;
 }
-/* Muestra el submenú al hacer hover en el botón específico */
-.tab-button-container:hover .submenu {
-    display: block;
-    opacity: 1; /* Aparece gradualmente */
-    transform: translateX(10px); 
-}
-
 
 /* //////////////////////////////////////
 // FUNCION PARA MANIPULAR EL SUBMENU //
 ////////////////////////////////////// */
- 
+#map-control-icon{
+    font-size: 24;
+}
+/* //////////////////////////////////////
+/ FUNCION PARA MENU DE COMPATIBILIDADES /
+////////////////////////////////////// */
+/* Estilos para las categorías y subcategorías */
+/* Estilos para el encabezado de la categoría */
+.categoria-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #222222;
+    border: 1px solid #444;
+    cursor: pointer;
+    font-weight: bold;
+    border-top-left-radius: 15px; 
+    border-top-right-radius: 15px;
+}
+
+.categoria-header:hover {
+    background-color: #555;
+}
+
+/* Estilos para el texto de la categoría */
+.categoria-texto {
+    flex-grow: 1; /* Ocupa el espacio disponible */
+    font-size: 14px;
+}
+
+/* Estilos para el ícono de flecha */
+.toggle-arrow {
+    margin-left: 10px;
+    font-size: 12px;
+}
+
+/* Estilos para la lista de subcategorías */
+.subcategoria-list {
+    list-style-type: none;
+    padding-left: 20px;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.subcategoria-list li {
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}

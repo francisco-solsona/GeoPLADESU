@@ -33,29 +33,31 @@
     <!-- ///// ESTRUCTURA DEL CONTENEDOR DE INFORMACIÓN ///// -->
     <div class="info-container" id="info-container"> 
 
-        <h1>Geovisor urbano <br> PLADESU</h1>
+        <h1>Geovisor urbano <br> Zonificación y catastro</h1>
 
         <hr>
 
         <div class="info-block" id="resumen">
-
-            <h2>¿Cómo usar?</h2>
-
-            <p>En este visor podrás consultar la información referente a los usos de suelo dentro del municipio, 
+            <h2>
+                <span id="toggle-arrow">▼</span> ¿Cómo usar?
+            </h2>
+            <p>
+                En este visor podrás consultar la información referente a los usos de suelo dentro del municipio, 
                 así como las normas particulares y compatibilidades de uso que puedan aplicar a nivel manzana. 
-                Para comenzar <strong>haz zoom</strong> a tu zona de interés y después <strong>haz click</strong> en algun predio para consultar la información.
+                Para comenzar <strong>haz zoom</strong> a tu zona de interés y después <strong>haz click</strong> 
+                en algun predio para consultar la información. <br>
+                
             </p>
 
+            <div id="info-catastral-block"> <!-- Info. dinámica de catastro -->
+                <p id="info-catastral"></p>
+                <p id="informacion-zonificacion"></p>
+            </div>
+            
         </div> 
-
-        <hr>
-        <!-- Aquí se insertará dinámicamente la clave catastral -->
-        <div class="info-block" id="clave-catastral-block">
-            <p id="info-catastral"></p>
-        </div>
-        <div class="info-block" id="info-zonificacion-block">
-            <p id="informacion-zonificacion"></p>
-        </div>
+        
+        <div class="info-block" id="info-zoning-block" style="display: none;"> </div>
+        <div class="info-block" id="info-compatible-block" style="display: none;"> </div>
     </div>
     
     <div id="map"></div>
@@ -79,14 +81,20 @@
         <!-- //////////////////////////////////////////// -->
 
         <div class="tab-button-container">
-            <button class="tab-button" id="tab-description" data-tooltip="PLADESU">
+            <button class="tab-button" id="tab-predio" data-tooltip="Zonificación">
                 <i class="icon-building" id="menu-icon"></i>
             </button>
             <div class="submenu">
-                <div class="submenu-title">PLADESU</div>
-                <button class="submenu-item" id="description-option-a">Opción A</button>
-                <button class="submenu-item" id="description-option-b">Opción B</button>
-                <button class="submenu-item" id="description-option-c">Opción C</button>
+                <div class="submenu-title">Zonificación</div>
+                <button class="submenu-item" id="predio-option-a">
+                    <i class="icon-home" id="submenu-icon"></i> Uso del suelo
+                </button>
+                <button class="submenu-item" id="predio-option-b">
+                    <i class="icon-random" id="submenu-icon"></i> Compatibilidades
+                </button>
+                <button class="submenu-item" id="predio-option-c">
+                    <i class="icon-list-ul" id="submenu-icon"></i> Normatividad
+                </button>
             </div>
         </div>
 
@@ -139,7 +147,9 @@
                 <button class="submenu-item" id="download-option-a">
                     <i class="icon-download-alt" id="submenu-icon"></i> Descargar
                 </button>
-
+                <button class="submenu-item" id="download-option-a">
+                    <i class="icon-file-text-alt" id="submenu-icon"></i> Descargar resúmen
+                </button>
             </div>
         </div>
     </div>
@@ -147,11 +157,11 @@
     <!-- //////////////////////////////////////////// -->
 
     <div class="layer-control" id="layer-control">
-        <button class="layer-button" data-tooltip="Encender/Apagar capas">
-            <img src="https://i.imgur.com/0oR29hk.png" alt="Layer" class="layer" style="margin-right: 0px;">
+        <button class="layer-button" id="layer-toggle" data-tooltip="Encender/Apagar capas">
+            <i class="icon-filter" id="map-control-icon"></i>
         </button>
-        <button id="base-map-toggle" class="layer-button" data-tooltip="Cambiar mapa base">
-            🌐
+        <button class="layer-button" id="base-map-toggle" data-tooltip="Cambiar mapa base">
+            <i class="icon-globe" id="map-control-icon"></i>
         </button>
     </div>
 
