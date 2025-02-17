@@ -295,7 +295,7 @@ map.on('load', () => {
             
             // **INTEGRACIÓN DE FETCH PARA USOS COMPATIBLES**
             try {                              
-                const response = await fetch('https://github.com/francisco-solsona/GeoPLADESU/blob/main/datos/PMDUQ_COMPATIBILIDAD.json'); // Reemplaza con la ruta real
+                const response = await fetch('datos/PMDUQ_COMPATIBILIDAD.json'); // Reemplaza con la ruta real
                 const data = await response.json();
 
                 // Extraer la información basada en el uso del suelo del predio
