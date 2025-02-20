@@ -19,6 +19,11 @@
 
     <!-- ///// AGREGAMOS ICONOS DE FONT-AWESOME ///// -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css">
+    <!-- Mapbox GL Draw -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.js"></script>
+    <!-- Turf.js para cálculos geográficos -->
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>  
 </head>
 
 <body>
@@ -61,6 +66,11 @@
     </div>
     
     <div id="map"></div>
+
+    <div id="scale">
+        <div id="scale-line"></div>
+        <div id="scale-label"></div>
+    </div>
 
     <!-- ///// ESTRUCTURA DEL MENU ///// -->
     <div class="side-tabs">
@@ -163,7 +173,10 @@
         <button class="layer-button" id="base-map-toggle" data-tooltip="Cambiar mapa base">
             <i class="icon-globe" id="map-control-icon"></i>
         </button>
+
     </div>
+    
+
 
     <script src="script.js"></script>
     

@@ -1,4 +1,5 @@
 mapboxgl.accessToken = 'pk.eyJ1IjoicGFjby1zb2xzb25hIiwiYSI6ImNseXJlcjN6bDA2M2kyaXB5d2NtYWJ3N2UifQ.s0HyJk7NLcV5ToGO-rLOew';
+
 const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/standard',
@@ -10,6 +11,7 @@ const map = new mapboxgl.Map({
     ],
     center: [-100.39279, 20.59246]
 });
+
 map.on('style.load', () => {
     map.setFog({});
 });
@@ -199,7 +201,7 @@ map.on('load', () => {
         },
         'filter': ['==', 'ID', ''] // Inicialmente no muestra nada
     });
-
+    
     // Evento de clic en la capa catastro-fill-layer
     map.on('click', 'catastro-fill-layer', async (e) => {
         
@@ -232,11 +234,11 @@ map.on('load', () => {
                     'Clave de uso general': zonificacionFeature.properties.CVE_1,
                     'Nomenclatura': zonificacionFeature.properties.CVE_2,
                     'Coeficiente de Ocupación del Suelo': zonificacionFeature.properties.COS__decim,
-                    'Área libre': zonificacionFeature.properties.Área_libr,
-                    'Superficie mínima de área libre': 'N/A',
                     'Coeficiente de Utilización del Suelo': zonificacionFeature.properties.CUS__decim,
+                    'Área libre': zonificacionFeature.properties.Área_libr,
                     'Sup. máxima de desplante': 'N/A',
                     'Sup. máxima de construcción': 'N/A',
+                    'Superficie mínima de área libre': 'N/A',
                     'Niveles': zonificacionFeature.properties.NIVELES,
                     'Altura máxima': zonificacionFeature.properties.Altura_Max,
                     'Viviendas permitidas por hectárea': zonificacionFeature.properties.Factor__Vi,
@@ -295,8 +297,7 @@ map.on('load', () => {
             
             // **INTEGRACIÓN DE FETCH PARA USOS COMPATIBLES**
             try {                              
-                const response = await fetch('https://raw.githubusercontent.com/francisco-solsona/GeoPLADESU/main/datos/PMDUQ_COMPATIBILIDAD.json');
-
+                const response = await fetch('datos/PMDUQ_COMPATIBILIDAD.json'); // Reemplaza con la ruta real
                 const data = await response.json();
 
                 // Extraer la información basada en el uso del suelo del predio
@@ -498,13 +499,13 @@ document.addEventListener("DOMContentLoaded", function () {
 // Identificar el botón y añadir el evento de clic
 document.getElementById('layer-control').addEventListener('click', function () {
     // Verificar la visibilidad actual de la capa
-    const visibility = map.getLayoutProperty('point-layer', 'visibility');
+    const visibility = map.getLayoutProperty('zoning-fill-layer', 'visibility');
     if (visibility === 'none') {
         // Hacer visible la capa si está oculta
-        map.setLayoutProperty('point-layer', 'visibility', 'visible');
+        map.setLayoutProperty('zoning-fill-layer', 'visibility', 'visible');
     } else {
         // Ocultar la capa si está visible
-        map.setLayoutProperty('point-layer', 'visibility', 'none');
+        map.setLayoutProperty('zoning-fill-layer', 'visibility', 'none');
     }
 });
 
@@ -632,8 +633,57 @@ function toggleSubmenu(tabId) {
 }
 
 /////////////////////////////////////////////////////////////////////
-/////////// FUNCIONES PARA TODOS LOS BOTONES DEL SUBMENÚ ////////////
+/////////// FUNCIONES PARA CREAR LA ESCALA GRAFICA ////////////
 /////////////////////////////////////////////////////////////////////
+// Función para actualizar la escala gráfica
+function updateScale() {
+    // Obtener las dimensiones del contenedor de la escala
+    const scaleContainer = document.getElementById('scale');
+    const scaleLine = document.getElementById('scale-line');
+    const scaleLabel = document.getElementById('scale-label');
+
+    // Definir la longitud deseada de la escala en píxeles (por ejemplo, 100px)
+    const scaleLengthPx = 100;
+
+    // Calcular la distancia en metros que corresponde a la longitud en píxeles
+    const center = map.getCenter(); // Centro del mapa
+    const bounds = map.getBounds(); // Límites del mapa
+    const left = bounds.getWest(); // Longitud del borde izquierdo
+    const right = bounds.getEast(); // Longitud del borde derecho
+
+    // Calcular la distancia horizontal en metros
+    const distance = turf.distance(
+        [left, center.lat], // Punto izquierdo
+        [right, center.lat], // Punto derecho
+        { units: 'meters' } // Unidad de medida
+    );
+
+    // Calcular la resolución del mapa (metros por píxel)
+    const mapWidthPx = map.getCanvas().width; // Ancho del mapa en píxeles
+    const resolution = distance / mapWidthPx; // Metros por píxel
+
+    // Calcular la distancia correspondiente a la escala en píxeles
+    const scaleDistance = resolution * scaleLengthPx;
+
+    // Redondear la distancia a un valor "amigable" (por ejemplo, 100, 500, 1000)
+    const roundedDistance = Math.round(scaleDistance / 50) * 50;
+
+    // Actualizar la línea y la etiqueta de la escala
+    scaleLine.style.width = `${(roundedDistance / resolution)}px`;
+    scaleLabel.textContent = `${roundedDistance} metros`;
+}
+
+// Actualizar la escala cuando el mapa se mueva o cambie el zoom
+map.on('move', updateScale);
+map.on('zoom', updateScale);
+
+// Llamar a la función inicialmente para mostrar la escala
+updateScale();
+
+
+///////////////////////////////////////////////////////
+// FUNCION PARA HERRAMIENTA DE MEDICION //
+///////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////
 // FUNCION PARA COMPARTIR A TRAVES DE REDES SOCIALES //

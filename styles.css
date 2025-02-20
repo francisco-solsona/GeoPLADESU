@@ -430,3 +430,33 @@ a:visited {
     padding: 5px 0;
     border-bottom: 1px solid #eee;
 }
+/* ////////////////////// */
+
+#scale {
+    position: absolute;
+    bottom: 3vh;
+    left: 37.5vw;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    z-index: 1000; /* Asegura que esté por encima del mapa */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#scale-line {
+    height: 2px;
+    background: black;
+}
+
+#scale-label {
+    white-space: nowrap;
+}
+
+#measure-toggle.active {
+    background-color: #4CAF50; /* Color de fondo cuando está activo */
+    color: white; /* Color del icono */
+}
