@@ -121,7 +121,7 @@ function generarPDF(atributosZonificacion, atributosCompatibilidades) {
     }
 
     // Guardar el PDF y abrirlo en una nueva pestaña
-    doc.save(`resumen_predio_${atributosCatastro.DGR_CVECAT}.pdf`);
+    doc.save("resumen_predio.pdf");
     window.open(doc.output('bloburl'), '_blank');
 }
 
