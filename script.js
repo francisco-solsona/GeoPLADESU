@@ -393,6 +393,20 @@ map.on('load', () => {
             } else {
                 document.getElementById('info-zoning-block').innerHTML = '<p>No se encontró información de zonificación para este predio.</p>';
             }
+
+            ////////////////////////////////////////////////////
+            ////// FUNCION PARA GENERAR EL RESUMEN PDF //////
+            ////////////////////////////////////////////////////
+            // script.js
+            document.getElementById('point-info-option-a').addEventListener('click', () => {
+                if (!atributosZonificacion || !atributosCompatibilidades) {
+                    alert("No hay información disponible para generar el PDF.");
+                    return;
+                }
+
+                // Llamar a la función global generarPDF
+                generarPDF(atributosZonificacion, atributosCompatibilidades);
+            });
         }
     });
 
@@ -400,29 +414,7 @@ map.on('load', () => {
     ///// CONTROLAMOS MENU DE ZONIFICACION /////
     ////////////////////////////////////////////
     
-    // Función para manejar el clic de los botones
-    function handleButtonClick(blockId) {
-        // Cerrar cualquier otro bloque activo
-        const infoBlocks = document.querySelectorAll('.info-block');
-        infoBlocks.forEach(block => {
-            block.style.display = 'none';  // Ocultar todos los bloques
-        });
-
-        // Mostrar el bloque de información correspondiente
-        const targetBlock = document.getElementById(blockId);
-        if (targetBlock) {
-            targetBlock.style.display = 'block'; // Mostrar el bloque específico
-        }
-    }
-
-    // Asignar la función a los botones
-    document.getElementById('predio-option-a').addEventListener('click', () => {
-        handleButtonClick('info-zoning-block'); // Bloque para predio-option-a
-    });
-
-    document.getElementById('predio-option-b').addEventListener('click', () => {
-        handleButtonClick('info-compatible-block'); // Bloque para predio-option-b (cambia el ID según corresponda)
-    });
+    
 
 
 
@@ -437,6 +429,33 @@ map.on('load', () => {
     });
 });
 
+////////////////////////////////////////////
+// Función para manejar el clic de los botones
+////////////////////////////////////////////
+function handleButtonClick(blockId) {
+    // Cerrar cualquier otro bloque activo
+    const infoBlocks = document.querySelectorAll('.info-block');
+    infoBlocks.forEach(block => {
+        block.style.display = 'none';  // Ocultar todos los bloques
+    });
+
+    // Mostrar el bloque de información correspondiente
+    const targetBlock = document.getElementById(blockId);
+    if (targetBlock) {
+        targetBlock.style.display = 'block'; // Mostrar el bloque específico
+    }
+}
+
+// Asignar la función a los botones
+document.getElementById('predio-option-a').addEventListener('click', () => {
+    handleButtonClick('info-zoning-block'); // Bloque para predio-option-a
+});
+
+document.getElementById('predio-option-b').addEventListener('click', () => {
+    handleButtonClick('info-compatible-block'); // Bloque para predio-option-b (cambia el ID según corresponda)
+});
+////////////////////////////////////////////
+////////////////////////////////////////////
 // Evento para mostrar el bloque de "¿Cómo usar?" cuando se haga clic en el botón correspondiente
 document.getElementById('tab-how-to').addEventListener('click', () => {
     // Ocultar cualquier otro bloque activo (por ejemplo, la información de zonificación)

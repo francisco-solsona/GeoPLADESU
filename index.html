@@ -1,29 +1,36 @@
 <!DOCTYPE html>
-<html>
-<head>
+<html lang="es">
     
-    <meta charset="utf-8"> 
+<head>
+    <!-- Metadatos básicos -->
+    <meta charset="utf-8">
     <title>PLADESU - Geovisor</title> <!-- Título de la página -->
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"> <!-- Configura la vista para dispositivos móviles -->
-    <link href="https://api.mapbox.com/mapbox-gl-js/v3.9.3/mapbox-gl.css" rel="stylesheet"> <!-- Incluye el CSS de Mapbox -->
-    <link rel="stylesheet" href="styles.css"> 
-    <script src="https://api.mapbox.com/mapbox-gl-js/v3.9.3/mapbox-gl.js"></script> <!-- Incluye el JS de Mapbox -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet"> <!-- Incluye la fuente Montserrat -->
-    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>  
-    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud/1.1.0/wordcloud.min.js"></script>
-    <script src="https://unpkg.com/@turf/turf/turf.min.js"></script> <!-- Agregar Turf.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <meta name="viewport" content="width=device-width,initial-scale=1"> <!-- Configura la vista para dispositivos móviles -->
 
-    <!-- ///// AGREGAMOS ICONOS DE FONT-AWESOME ///// -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css">
-    <!-- Mapbox GL Draw -->
-    <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.css" rel="stylesheet">
-    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.js"></script>
-    <!-- Turf.js para cálculos geográficos -->
-    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>  
+    <!-- Estilos globales y fuentes -->
+    <link rel="stylesheet" href="styles.css"> <!-- Estilos personalizados -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet"> <!-- Fuente Montserrat -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css"> <!-- Iconos de Font Awesome -->
+
+    <!-- Mapbox GL JS y estilos -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.9.3/mapbox-gl.css" rel="stylesheet"> <!-- CSS de Mapbox -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.9.3/mapbox-gl.js"></script> <!-- JS de Mapbox -->
+
+    <!-- Plugins de Mapbox -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" rel="stylesheet"> <!-- Estilos del geocoder -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script> <!-- Geocoder de Mapbox -->
+
+    <!-- Herramientas geoespaciales -->
+    <script src="https://unpkg.com/@turf/turf/turf.min.js"></script> <!-- Turf.js para cálculos geoespaciales -->
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script> <!-- Turf.js (versión alternativa) -->
+
+    <!-- Utilidades adicionales -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script> <!-- html2canvas para capturas de pantalla -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> <!-- Generamos PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script> <!-- Captura de pantalla -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script> <!-- Generamos tablas -->
+    
+
 </head>
 
 <body>
@@ -80,7 +87,7 @@
         <!-- //////////////////////////////////////////// -->
          
         <div class="tab-button-container">   
-            <button class="tab-button" id="tab-how-to" data-tooltip="¿Cómo usar?">
+            <button class="tab-button" id="tab-how-to" data-tooltip="¿Cómo usar?" title="¿Cómo usar?">
                 <i class="icon-exclamation-sign" id="menu-icon"></i>
             </button>
             <div class="submenu">
@@ -91,7 +98,7 @@
         <!-- //////////////////////////////////////////// -->
 
         <div class="tab-button-container">
-            <button class="tab-button" id="tab-predio" data-tooltip="Zonificación">
+            <button class="tab-button" id="tab-predio" data-tooltip="Zonificación" title="Zonificación">
                 <i class="icon-building" id="menu-icon"></i>
             </button>
             <div class="submenu">
@@ -111,7 +118,7 @@
         <!-- //////////////////////////////////////////// -->
 
         <div class="tab-button-container"> 
-            <button class="tab-button" id="tab-point-info" data-tooltip="Información">
+            <button class="tab-button" id="tab-point-info" data-tooltip="Información" title="Información">
                 <i class="icon-bar-chart" id="menu-icon"></i>
             </button>
             <div class="submenu">
@@ -131,7 +138,7 @@
         <!-- //////////////////////////////////////////// -->
 
         <div class="tab-button-container"> 
-            <button class="tab-button" id="tab-share" data-tooltip="Compartir">
+            <button class="tab-button" id="tab-share" data-tooltip="Compartir" title="Compartir">
                 <i class="icon-share-alt" id="menu-icon"></i>
             </button>
             <div class="submenu">
@@ -149,7 +156,7 @@
         <!-- //////////////////////////////////////////// -->
 
         <div class="tab-button-container"> 
-            <button class="tab-button" id="tab-download" data-tooltip="Descargar">
+            <button class="tab-button" id="tab-download" data-tooltip="Descargar" title="Descargar">
                 <i class="icon-download-alt" id="menu-icon"></i>
             </button>
             <div class="submenu">
@@ -157,7 +164,7 @@
                 <button class="submenu-item" id="download-option-a">
                     <i class="icon-download-alt" id="submenu-icon"></i> Descargar
                 </button>
-                <button class="submenu-item" id="download-option-a">
+                <button class="submenu-item" id="download-option-b">
                     <i class="icon-file-text-alt" id="submenu-icon"></i> Descargar resúmen
                 </button>
             </div>
@@ -167,17 +174,17 @@
     <!-- //////////////////////////////////////////// -->
 
     <div class="layer-control" id="layer-control">
-        <button class="layer-button" id="layer-toggle" data-tooltip="Encender/Apagar capas">
+        <button class="layer-button" id="layer-toggle" data-tooltip="Encender/Apagar capas" title="Control de capas">
             <i class="icon-filter" id="map-control-icon"></i>
         </button>
-        <button class="layer-button" id="base-map-toggle" data-tooltip="Cambiar mapa base">
+        <button class="layer-button" id="base-map-toggle" data-tooltip="Cambiar mapa base" title="Control mapa base">
             <i class="icon-globe" id="map-control-icon"></i>
         </button>
 
     </div>
     
-
-
+    <!-- Incluye pdfGenerator.js antes que script.js -->
+    <script src="pdfGenerator.js"></script>
     <script src="script.js"></script>
     
 </body>
