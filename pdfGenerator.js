@@ -45,6 +45,100 @@ function agregarTextoConSalto(doc, texto, x, y, maxAncho, color = [0, 0, 0]) {
     return y + (lineas.length * 10);
 }
 
+function agregarTablaCompatibilidades(doc, categorias, y) {
+    const startY = y;
+    const categoriaWidth = 40; // Ancho reducido para la columna de Categoría
+    const subcategoriasWidth = 140; // Ancho ampliado para la columna de Subcategorías
+    const rowHeight = 10; // Altura de las filas
+    const margenInferior = 25; // Margen inferior para evitar desbordamiento
+
+    // Configuración de la tabla
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "bold");
+
+    // Dibujar encabezados de la tabla
+    doc.text("Categoría", 10, y);
+    doc.text("Subcategorías", 60, y); // Ajustamos la posición horizontal de "Subcategorías"
+    y += rowHeight;
+
+    // Dibujar línea debajo del encabezado
+    doc.setLineWidth(0.5);
+    doc.line(10, y, 190, y);
+    y += rowHeight;
+
+    // Restaurar la fuente a normal para el contenido de la tabla
+    doc.setFont("helvetica", "normal");
+
+    // Iterar sobre las categorías y subcategorías
+    for (const [categoria, subcategorias] of Object.entries(categorias)) {
+        let categoriaRepetida = false; // Bandera para saber si la categoría ya se repitió en una nueva página
+
+        // Verificar si hay espacio suficiente en la página para la categoría y al menos una línea de subcategorías
+        if (y + rowHeight > doc.internal.pageSize.getHeight() - margenInferior) {
+            doc.addPage(); // Agregar una nueva página
+            y = 20; // Reiniciar la posición vertical en la nueva página
+
+            // Volver a dibujar los encabezados de la tabla en la nueva página
+            doc.setFont("helvetica", "bold");
+            doc.text("Categoría", 10, y);
+            doc.text("Subcategorías", 60, y); // Ajustamos la posición horizontal de "Subcategorías"
+            y += rowHeight;
+            doc.line(10, y, 190, y);
+            y += rowHeight;
+            doc.setFont("helvetica", "normal");
+
+            // Repetir el nombre de la categoría en la nueva página
+            doc.text(categoria, 10, y);
+            categoriaRepetida = true; // Marcamos que la categoría ya se repitió
+        } else {
+            // Agregar la categoría en la primera columna
+            doc.text(categoria, 10, y);
+        }
+
+        // Dividir las subcategorías en líneas que no excedan el ancho de la columna
+        const subcategoriasTexto = subcategorias.join(", ");
+        const subcategoriasLineas = doc.splitTextToSize(subcategoriasTexto, subcategoriasWidth);
+
+        // Dibujar cada línea de subcategorías
+        for (let i = 0; i < subcategoriasLineas.length; i++) {
+            // Verificar si hay espacio suficiente en la página para la siguiente línea
+            if (y + rowHeight > doc.internal.pageSize.getHeight() - margenInferior) {
+                doc.addPage(); // Agregar una nueva página
+                y = 20; // Reiniciar la posición vertical en la nueva página
+
+                // Volver a dibujar los encabezados de la tabla en la nueva página
+                doc.setFont("helvetica", "bold");
+                doc.text("Categoría", 10, y);
+                doc.text("Subcategorías", 60, y); // Ajustamos la posición horizontal de "Subcategorías"
+                y += rowHeight;
+                doc.line(10, y, 190, y);
+                y += rowHeight;
+                doc.setFont("helvetica", "normal");
+
+                // Repetir el nombre de la categoría en la nueva página
+                doc.text(categoria, 10, y);
+                categoriaRepetida = true; // Marcamos que la categoría ya se repitió
+            }
+
+            // Agregar la línea de subcategorías
+            doc.text(subcategoriasLineas[i], 60, y); // Ajustamos la posición horizontal de las subcategorías
+            y += rowHeight;
+        }
+
+        // Dibujar línea debajo de cada fila
+        if (y + rowHeight > doc.internal.pageSize.getHeight() - margenInferior) {
+            doc.addPage(); // Agregar una nueva página
+            y = 20; // Reiniciar la posición vertical en la nueva página
+        } else {
+            doc.line(10, y, 190, y);
+            y += rowHeight;
+        }
+    }
+
+    return y;
+}
+
 function generarPDF(atributosZonificacion, atributosCompatibilidades) {
     const doc = new jspdf.jsPDF();
 
@@ -98,22 +192,9 @@ function generarPDF(atributosZonificacion, atributosCompatibilidades) {
             }
             categorias[item.Categoría].push(item.Subcategoría);
         });
-    
-        for (const [categoria, subcategorias] of Object.entries(categorias)) {
-            y = verificarDesbordamiento(doc, y); // Verificar desbordamiento
-    
-            // Agregar el nombre de la categoría en negritas
-            doc.setFont("helvetica", "bold"); // Fuente en negritas
-            y = agregarTextoConSalto(doc, `- ${categoria}:`, 10, y, 180); // Categoría
-            doc.setFont("helvetica", "normal"); // Restaurar la fuente a normal
-    
-            y += 1; // Reducir el espacio entre la categoría y sus subcategorías
-    
-            subcategorias.forEach(sub => {
-                y = verificarDesbordamiento(doc, y); // Verificar desbordamiento
-                y = agregarTextoConSalto(doc, `  * ${sub}`, 15, y, 175, [100, 100, 100]); // Subcategoría
-            });
-        }
+
+        // Agregar la tabla de compatibilidades
+        y = agregarTablaCompatibilidades(doc, categorias, y);
     } else {
         y = verificarDesbordamiento(doc, y); // Verificar desbordamiento
         y = agregarTextoConSalto(doc, "No se encontraron usos compatibles.", 10, y, 180, [100, 100, 100]);

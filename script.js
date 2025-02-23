@@ -130,6 +130,22 @@ function addCustomLayers() {
             url:  globalCensoUrl // URL del vector layer 'C22_QRO_Z02_2022-dqkkpw'
         });
     }
+    if (!map.getLayer('censo-line-layer')) {
+        map.addLayer({
+            'id': 'censo-line-layer',
+            'type': 'line',  // Cambiado de 'circle' a 'fill' para trabajar con polígonos
+            'source': 'censo',  // Asegúrate de que el nombre de la fuente coincida
+            'source-layer': globalCensoLayer, // Asegúrate de que el nombre de la capa coincida
+            'slot': 'top',
+            'minzoom': 15,
+            'maxzoom': 22,
+            'paint': {
+                'line-color': '#000000',  // Bordes en color negro
+                'line-width': 0,  // Grosor de la línea
+                'line-opacity': 0  // Opcional, para controlar la opacidad del relleno
+            }
+        });
+    }
     if (!map.getLayer('censo-fill-layer')) {
         map.addLayer({
             'id': 'censo-fill-layer',
@@ -221,6 +237,7 @@ map.on('load', () => {
             map.setFilter('catastro-extrusion', ['==', 'ID', selectedFeatureId]);
             map.setFilter('catastro-highlight', ['==', 'ID', selectedFeatureId]);
 
+            
             // Consultar la capa de zonificación para obtener los atributos del polígono de zonificación
             const zonificacionFeatures = map.queryRenderedFeatures(e.point, { layers: ['zoning-fill-layer'] });
             
