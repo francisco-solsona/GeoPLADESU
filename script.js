@@ -223,6 +223,7 @@ map.on('load', () => {
         
         if (e.features.length > 0) {
             const feature = e.features[0];
+            
             selectedFeatureId = feature.properties.ID; // Guarda el ID del polígono seleccionado
 
             atributosCatastro = {
@@ -252,7 +253,7 @@ map.on('load', () => {
                     'Nomenclatura': zonificacionFeature.properties.CVE_2,
                     'Coeficiente de Ocupación del Suelo': zonificacionFeature.properties.COS__decim,
                     'Coeficiente de Utilización del Suelo': zonificacionFeature.properties.CUS__decim,
-                    'Área libre': zonificacionFeature.properties.Área_libr,
+                    'Área libre': (parseFloat(zonificacionFeature.properties.Área_libr) * 100).toFixed(1) + "%", // Convertir a porcentaje
                     'Sup. máxima de desplante': 'N/A',
                     'Sup. máxima de construcción': 'N/A',
                     'Superficie mínima de área libre': 'N/A',
@@ -430,10 +431,6 @@ map.on('load', () => {
     ////////////////////////////////////////////
     ///// CONTROLAMOS MENU DE ZONIFICACION /////
     ////////////////////////////////////////////
-    
-    
-
-
 
     // Restablecer la selección al hacer clic en otra parte del mapa
     map.on('click', (e) => {
@@ -471,6 +468,7 @@ document.getElementById('predio-option-a').addEventListener('click', () => {
 document.getElementById('predio-option-b').addEventListener('click', () => {
     handleButtonClick('info-compatible-block'); // Bloque para predio-option-b (cambia el ID según corresponda)
 });
+
 ////////////////////////////////////////////
 ////////////////////////////////////////////
 // Evento para mostrar el bloque de "¿Cómo usar?" cuando se haga clic en el botón correspondiente
@@ -524,10 +522,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const observer = new MutationObserver(checkInfoBlock);
     observer.observe(infoCatastralBlock, { childList: true, subtree: true });
 });
-
-
-
-
 
 // FUNCION PARA ENCENDER/APAGAR LAS CAPAS //
 ////////////////////////////////////////////
@@ -720,6 +714,21 @@ updateScale();
 ///////////////////////////////////////////////////////
 // FUNCION PARA HERRAMIENTA DE MEDICION //
 ///////////////////////////////////////////////////////
+// Agregar el Geocoder de Mapbox
+const geocoder = new MapboxGeocoder({
+    accessToken: mapboxgl.accessToken, // Usa el mismo token de acceso que el mapa
+    mapboxgl: mapboxgl, // Referencia a la librería de Mapbox GL JS
+    marker: true, // No mostrar un marcador en la ubicación encontrada
+    placeholder: 'Buscar un lugar', // Texto de placeholder en el buscador
+    bbox: [-100.66596, 20.37553, -100.13981, 20.86796], // Límites geográficos para la búsqueda (opcional)
+    proximity: {
+        longitude: -100.39279,
+        latitude: 20.59246
+    } // Priorizar resultados cerca del centro del mapa
+});
+
+// Agregar el Geocoder al mapa
+map.addControl(geocoder);
 
 ///////////////////////////////////////////////////////
 // FUNCION PARA COMPARTIR A TRAVES DE REDES SOCIALES //

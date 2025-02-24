@@ -142,6 +142,19 @@ function agregarTablaCompatibilidades(doc, categorias, y) {
 function generarPDF(atributosZonificacion, atributosCompatibilidades) {
     const doc = new jspdf.jsPDF();
 
+    // Obtener el centro y el zoom del mapa actual
+    const center = map.getCenter();
+    const zoom = map.getZoom();
+
+    console.log("Centro del mapa:", center.lng, center.lat);
+    console.log("Zoom del mapa:", zoom);
+
+    // Usar el estilo personalizado que incluye la capa de zonificación
+    const customStyleId = 'cm6fecyps001q01qqhx0n7dub'; // Solo el ID del estilo
+    const staticMapUrl = `https://api.mapbox.com/styles/v1/paco-solsona/${customStyleId}/static/${center.lng},${center.lat},${zoom}/600x400@2x?access_token=${mapboxgl.accessToken}`;
+
+    console.log("URL de la imagen estática:", staticMapUrl);
+
     // Aplicar estilos generales
     aplicarEstilos(doc);
 
@@ -153,58 +166,71 @@ function generarPDF(atributosZonificacion, atributosCompatibilidades) {
     const logoUrl = 'img/pladesu-logo.png'; // Ruta del logo
     doc.addImage(logoUrl, 'PNG', 10, 5, 45, 15); // (x, y, ancho, alto)
 
-    // Agregar un título al PDF (debajo de la barra gris)
-    let y = 40; // Posición vertical inicial
-    agregarTitulo(doc, "Resumen del Predio", y);
-    y = verificarDesbordamiento(doc, y + 10); // Verificar desbordamiento después del título
+    // Cargar la imagen estática del mapa y agregarla al PDF
+    const img = new Image();
+    img.src = staticMapUrl;
+    img.onload = () => {
+        console.log("Imagen estática cargada correctamente.");
+        const imgWidth = doc.internal.pageSize.getWidth() - 20; // Ancho de la imagen (margen de 10px a cada lado)
+        const imgHeight = (img.height * imgWidth) / img.width; // Mantener la proporción de la imagen
+        doc.addImage(img, 'PNG', 10, 30, imgWidth, imgHeight); // (x, y, ancho, alto)
 
-    // Agregar la información de zonificación
-    y = verificarDesbordamiento(doc, y); // Verificar desbordamiento
-    agregarSubtitulo(doc, "Información de Zonificación:", y);
-    y += 10;
+        let y = 30 + imgHeight + 10; // Posición vertical inicial después de la imagen
 
-    for (const [clave, valor] of Object.entries(atributosZonificacion)) {
+        // Agregar un título al PDF (debajo de la imagen)
+        agregarTitulo(doc, "Resumen del Predio", y);
+        y = verificarDesbordamiento(doc, y + 10); // Verificar desbordamiento después del título
+
+        // Agregar la información de zonificación
         y = verificarDesbordamiento(doc, y); // Verificar desbordamiento
+        agregarSubtitulo(doc, "Información de Zonificación:", y);
+        y += 10;
 
-        // Agregar el nombre del atributo en negritas
-        doc.setFont("helvetica", "bold"); // Fuente en negritas
-        y = agregarTextoConSalto(doc, `${clave}:`, 10, y, 80); // Nombre de la columna
-        doc.setFont("helvetica", "normal"); // Restaurar la fuente a normal
+        for (const [clave, valor] of Object.entries(atributosZonificacion)) {
+            y = verificarDesbordamiento(doc, y); // Verificar desbordamiento
 
-        // Agregar el valor del atributo
-        y = agregarTextoConSalto(doc, `${valor}`, 90, y - 10, 100, [100, 100, 100]); // Valor
-    }
+            // Agregar el nombre del atributo en negritas
+            doc.setFont("helvetica", "bold"); // Fuente en negritas
+            y = agregarTextoConSalto(doc, `${clave}:`, 10, y, 80); // Nombre de la columna
+            doc.setFont("helvetica", "normal"); // Restaurar la fuente a normal
 
-    y += 10;
+            // Agregar el valor del atributo
+            y = agregarTextoConSalto(doc, `${valor}`, 90, y - 10, 100, [100, 100, 100]); // Valor
+        }
 
-    // Verificar si hay suficiente espacio para la sección "Usos Compatibles"
-    y = verificarDesbordamiento(doc, y + 30); // Agregar un margen adicional
+        y += 10;
 
-    // Agregar la información de compatibilidades
-    agregarSubtitulo(doc, "Usos Compatibles:", y);
-    y += 15;
+        // Verificar si hay suficiente espacio para la sección "Usos Compatibles"
+        y = verificarDesbordamiento(doc, y + 30); // Agregar un margen adicional
 
-    if (atributosCompatibilidades.Compatibilidades.length > 0) {
-        const categorias = {};
-        atributosCompatibilidades.Compatibilidades.forEach(item => {
-            if (!categorias[item.Categoría]) {
-                categorias[item.Categoría] = [];
-            }
-            categorias[item.Categoría].push(item.Subcategoría);
-        });
+        // Agregar la información de compatibilidades
+        agregarSubtitulo(doc, "Usos Compatibles:", y);
+        y += 15;
 
-        // Agregar la tabla de compatibilidades
-        y = agregarTablaCompatibilidades(doc, categorias, y);
-    } else {
-        y = verificarDesbordamiento(doc, y); // Verificar desbordamiento
-        y = agregarTextoConSalto(doc, "No se encontraron usos compatibles.", 10, y, 180, [100, 100, 100]);
-        y += 5;
-    }
+        if (atributosCompatibilidades.Compatibilidades.length > 0) {
+            const categorias = {};
+            atributosCompatibilidades.Compatibilidades.forEach(item => {
+                if (!categorias[item.Categoría]) {
+                    categorias[item.Categoría] = [];
+                }
+                categorias[item.Categoría].push(item.Subcategoría);
+            });
 
-    // Guardar el PDF y abrirlo en una nueva pestaña
-    doc.save("resumen_predio.pdf");
-    window.open(doc.output('bloburl'), '_blank');
+            // Agregar la tabla de compatibilidades
+            y = agregarTablaCompatibilidades(doc, categorias, y);
+        } else {
+            y = verificarDesbordamiento(doc, y); // Verificar desbordamiento
+            y = agregarTextoConSalto(doc, "No se encontraron usos compatibles.", 10, y, 180, [100, 100, 100]);
+            y += 5;
+        }
+
+        // Guardar el PDF y abrirlo en una nueva pestaña
+        console.log("Generando PDF...");
+        doc.save("resumen_predio.pdf");
+        window.open(doc.output('bloburl'), '_blank');
+    };
+    img.onerror = (error) => {
+        console.error("Error al cargar la imagen estática:", error);
+        alert("No se pudo cargar la imagen del mapa. Verifica la URL y el accessToken.");
+    };
 }
-
-// Exportar la función al ámbito global
-window.generarPDF = generarPDF;

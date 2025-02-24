@@ -37,7 +37,6 @@ body { margin: 0;
     margin-right: 10px;
     
 }
-
 .info-block h2{
     font-size: 18px;
     text-align: left;
@@ -255,36 +254,36 @@ a:visited {
 ///////// MENU DE CAPAS Y SIMBOLOGIA //////////
 ////////////////////////////////////// */
 .layer-control {
-    position: fixed; /* Mantiene la posición fija */
-    bottom: 5%; /* Distancia desde la parte inferior */
-    left: 0.5%; /* Distancia desde el lado izquierdo */
-    z-index: 1000; /* Sobre otros elementos */
-    display: flex; /* Alinea los elementos en fila */
-    flex-direction: row; /* Mantén los botones en una fila */
-    gap: 10px; /* Espaciado entre botones */
+    position: fixed; 
+    bottom: 5%;
+    left: 0.5%; 
+    z-index: 1000; 
+    display: flex;
+    flex-direction: row; 
+    gap: 10px; 
 }
 .layer-button {
-    width: 40px; /* Ajusta el tamaño deseado */
-    height: 40px; /* Hace que el botón sea cuadrado */
-    background-color: black; /* Fondo negro */
-    border: none; /* Sin bordes */
-    border-radius: 50%; /* Botones redondos */
-    display: flex; /* Centra el contenido */
-    align-items: center; /* Alinea verticalmente */
-    justify-content: center; /* Alinea horizontalmente */
-    cursor: pointer; /* Cambia el cursor al pasar el mouse */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Sombra */
+    width: 40px; 
+    height: 40px; 
+    background-color: black; 
+    border: none;
+    border-radius: 50%; 
+    display: flex;
+    align-items: center; 
+    justify-content: center; 
+    cursor: pointer; 
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); 
 }
 .layer-button img {
-    width: 30px; /* Ajusta el tamaño del ícono */
-    height: auto; /* Mantiene la proporción */
-    filter: invert(100%); /* Cambia el color a blanco */
+    width: 30px;
+    height: auto; 
+    filter: invert(100%);
 }
 .layer-button:hover {
-    background-color: #555; /* Fondo más claro al pasar el mouse */
+    background-color: #555;
 }
 .layer-button[data-tooltip]:hover::after {
-    content: attr(data-tooltip); /* Muestra el texto del atributo data-tooltip */
+    content: attr(data-tooltip);
     position: absolute;
     bottom: 50px;
     left: 0;
@@ -297,16 +296,15 @@ a:visited {
     z-index: 1001;
 }
 #map-control-icon {
-    width: 10vw; /* Ajusta el tamaño deseado */
-    height: 2.4vh; /* Hace que el botón sea cuadrado */
-    font-size: 24px; /* Aumenta el tamaño del ícono o texto */
-    border-radius: 50%; /* Opcional: convierte el botón en un círculo */
+    width: 10vw; 
+    height: 2.4vh;
+    font-size: 24px; 
+    border-radius: 50%;
     align-items: center;
     justify-content: center;
-    color: white; /* Color del texto */
-    border: none; /* Sin borde */
-    cursor: pointer; /* Cambia el cursor al pasar sobre él */
-    /* padding-bottom: 4.5px; */
+    color: white; 
+    border: none; 
+    cursor: pointer; 
 }
 /* //////////////////////////////////////
 ///////// FUNCION PARA EL MENU //////////
@@ -430,12 +428,13 @@ a:visited {
     padding: 5px 0;
     border-bottom: 1px solid #eee;
 }
-/* ////////////////////// */
-
+/* -------------------------- */
+/*   ESTILOS PARA LA ESCALA   */
+/* -------------------------- */
 #scale {
     position: absolute;
-    bottom: 3vh;
-    left: 37.5vw;
+    bottom: 11vh;
+    left: 0.5vw;
     background: rgba(255, 255, 255, 0.8);
     padding: 5px 10px;
     border-radius: 5px;
@@ -446,17 +445,66 @@ a:visited {
     align-items: center;
     gap: 10px;
 }
-
 #scale-line {
     height: 2px;
     background: black;
 }
-
 #scale-label {
     white-space: nowrap;
 }
-
 #measure-toggle.active {
     background-color: #4CAF50; /* Color de fondo cuando está activo */
     color: white; /* Color del icono */
+}
+/* -------------------------- */
+/*  ESTILOS PARA EL GEOCODER  */
+/* -------------------------- */
+#geocoder-container {
+    width: 320px; /* Ancho del buscador */
+    background-color: #222222;
+    color: white;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.mapboxgl-ctrl-geocoder input {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    width: 100%;
+    background-color: #444;
+    color: white;
+}
+.mapboxgl-ctrl-geocoder .suggestions {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    background-color: #222222;
+    border: 1px solid #444;
+    color: white;
+}
+.mapboxgl-ctrl-geocoder ::placeholder{
+    color: white;
+    text-align: right;
+}
+.mapboxgl-ctrl-geocoder input  {
+    color: white !important;
+    text-align: right;
+    padding-right: 30px;
+    padding-left: 30px;
+}
+.mapboxgl-ctrl-geocoder .mapboxgl-ctrl-geocoder--button {
+    color: white !important;
+    background-color: #444 !important; /* Fondo igual al del Geocoder */
+    border: none !important; /* Elimina cualquier borde */
+    box-shadow: none !important; /* Evita sombras no deseadas */
+    fill: white !important; /* Asegura que el ícono "X" sea blanco */
+}
+.mapboxgl-ctrl-geocoder .mapboxgl-ctrl-geocoder--button:focus {
+    outline: none !important; /* Elimina el borde al hacer clic */
+    box-shadow: none !important; /* Evita cualquier resaltado */
+}
+/* Cambia el fondo del botón cuando pasas el mouse */
+.mapboxgl-ctrl-geocoder .mapboxgl-ctrl-geocoder--button:hover {
+    background-color: #666 !important; /* Un gris más claro al pasar el mouse */
 }
