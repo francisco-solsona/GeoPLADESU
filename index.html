@@ -63,11 +63,23 @@
                 <p id="info-catastral"></p>
                 <p id="informacion-zonificacion"></p>
             </div>
-            
         </div> 
         
-        <div class="info-block" id="info-zoning-block" style="display: none;"> </div>
-        <div class="info-block" id="info-compatible-block" style="display: none;"> </div>
+        <div id="info-zoning-block" class="info-block" style="display: none;">
+            <!-- Contenido de zonificación -->
+        </div>
+        
+        <div id="info-compatible-block" class="info-block" style="display: none;">
+            <!-- Contenido de usos compatibles -->
+        </div>
+        
+        <div id="info-norm-general-block" class="info-block" style="display: none;">
+            <!-- Contenido de normas generales -->
+        </div>
+        
+        <div id="info-norm-especifica-block" class="info-block" style="display: none;">
+            <!-- Contenido de normas específicas -->
+        </div>
     </div>
     
     <div id="map"></div>
@@ -110,13 +122,16 @@
             <div class="submenu">
                 <div class="submenu-title">Zonificación</div>
                 <button class="submenu-item" id="predio-option-a">
-                    <i class="icon-home" id="submenu-icon"></i> Uso del suelo
+                    <i class="icon-home" id="submenu-icon"></i> Uso del Suelo
                 </button>
                 <button class="submenu-item" id="predio-option-b">
                     <i class="icon-random" id="submenu-icon"></i> Usos Compatibles
                 </button>
                 <button class="submenu-item" id="predio-option-c">
-                    <i class="icon-list-ul" id="submenu-icon"></i> Normatividad
+                    <i class="icon-list-ul" id="submenu-icon"></i> Normas Generales
+                </button>
+                <button class="submenu-item" id="predio-option-d">
+                    <i class="icon-indent-right" id="submenu-icon"></i> Normas Específicas
                 </button>
             </div>
         </div>

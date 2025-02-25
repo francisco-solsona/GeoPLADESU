@@ -39,6 +39,7 @@ const enlacesDocumentos = {
 
 // Variable para almacenar el ID del polígono seleccionado de catastro
 let selectedFeatureId = null;
+let selectedCoordinates = null; // Variable para almacenar las coordenadas del predio seleccionado
 // Variable global para almacenar los atributos de zonificación
 let atributosZonificacion = {};
 let atributosCatastro = {};
@@ -226,6 +227,10 @@ map.on('load', () => {
             
             selectedFeatureId = feature.properties.ID; // Guarda el ID del polígono seleccionado
 
+            // Asignar las coordenadas del punto seleccionado
+            selectedCoordinates = e.lngLat;
+            console.log("Centro del predio:", selectedCoordinates.lng, selectedCoordinates.lat);
+
             atributosCatastro = {
                 'Clave Catastral': feature.properties.DGR_CVECAT,
                 'Superficie': parseFloat(feature.properties.Superficie).toFixed(1) + " m²",
@@ -258,11 +263,11 @@ map.on('load', () => {
                     'Sup. máxima de construcción': 'N/A',
                     'Superficie mínima de área libre': 'N/A',
                     'Niveles': zonificacionFeature.properties.NIVELES,
-                    'Altura máxima': zonificacionFeature.properties.Altura_Max,
+                    'Altura máxima': (zonificacionFeature.properties.Altura_Max) + " m",
                     'Viviendas permitidas por hectárea': zonificacionFeature.properties.Factor__Vi,
                     'Viviendas permitidas en el predio': 'N/A',
-                    'Frente mínimo (m2)': zonificacionFeature.properties.Frente_mí,
-                    'Sup. mínima del lote': zonificacionFeature.properties.Sup__Míni,
+                    'Frente mínimo': zonificacionFeature.properties.Frente_mí  + " m",
+                    'Sup. mínima del lote': zonificacionFeature.properties.Sup__Míni  + " m²",
                     'Programa rector': zonificacionFeature.properties.Documento,
                 };
 
@@ -313,42 +318,104 @@ map.on('load', () => {
             //////// INTEGRAMOS USOS Y COMPATIBILIDADES ////////
             ////////////////////////////////////////////////////
             
-            // **INTEGRACIÓN DE FETCH PARA USOS COMPATIBLES**
-            try {                              
-                const response = await fetch('datos/PMDUQ_COMPATIBILIDAD.json'); // Reemplaza con la ruta real
+            try {
+                // Realizar la solicitud fetch para obtener el JSON
+                const response = await fetch('datos/PMDUQ-normatividad.json'); // Reemplaza con la ruta real
                 const data = await response.json();
+            
+                
+                console.log("JSON cargado:", data); // Debug: Verificar el JSON cargado
+            
+                // Verificar si el JSON tiene la propiedad 'cg-pb-activas'
+                if (!data['cg-pb-activas']) {
+                    console.error("El JSON no tiene la propiedad 'cg-pb-activas'");
+                } else {
+                    // Obtener las normas de plantas bajas activas
+                    const normasPBActivas = data['cg-pb-activas'];
 
-                // Extraer la información basada en el uso del suelo del predio
-                const usoSuelo = atributosZonificacion['Clave de uso general'];
+                    // Buscar coincidencia entre la Nomenclatura del predio y el JSON
+                    const normaEncontrada = normasPBActivas.find(norma => norma.CVE_2 === atributosZonificacion.Nomenclatura);
 
-                // Inicializar un arreglo para almacenar las compatibilidades
-                const compatibilidades = [];
+                    if (normaEncontrada) {
+                        // Mostrar el mensaje en el bloque de normas generales
+                        // Mostrar el subtítulo y el mensaje en el bloque de normas generales
+        const mensaje = `
+        <h2>Compatibilidad de Giros: Plantas Bajas Activas</h2>
+        <p>Los predios clasificados con uso <strong>${atributosZonificacion['Uso del suelo']}</strong> pueden solicitar autorización para desarrollar plantas bajas activas con hasta dos locales comerciales compatibles con el uso de suelo <strong>Habitacional Mixto (HM)</strong>, cuya superficie máxima conjunta será de <strong>${normaEncontrada.SUP_MAX} m²</strong> de construcción, siempre y cuando estén acompañados de vivienda en los niveles subsecuentes.</p>
+    `;
 
-                // Recorrer todas las categorías y subcategorías en el JSON
-                for (const categoria in data) {
-                    for (const subcategoria in data[categoria]) {
-                        // Verificar si el uso del suelo (usoSuelo) es compatible (tiene true)
-                        if (data[categoria][subcategoria][usoSuelo] === true) {
-                            compatibilidades.push({
-                                'Categoría': categoria,
-                                'Subcategoría': subcategoria
-                            });
-                        }
+                        document.getElementById('info-norm-general-block').innerHTML = `<p>${mensaje}</p>`;
+                    } else {
+                        // No se encontró coincidencia
+                        document.getElementById('info-norm-general-block').innerHTML = '<p>Predio no compatible con la norma "Compatibilidad de Giros: Plantas Bajas Activas."</p>';
+                    }
+                }
+                // Verificar si el JSON tiene la propiedad 'dda-restr-usos'
+                if (!data['dda-restr-usos']) {
+                    console.error("El JSON no tiene la propiedad 'dda-restr-usos'");
+                } else {
+                    // Obtener las restricciones de usos adicionales
+                    const restriccionesUsos = data['dda-restr-usos'];
+
+                    // Buscar coincidencia entre la Nomenclatura del predio y el JSON
+                    const restriccionEncontrada = restriccionesUsos.find(restriccion => restriccion.CVE_2 === atributosZonificacion.Nomenclatura);
+
+                    if (!restriccionEncontrada) {
+                        // Mostrar el subtítulo y el mensaje en el bloque de normas generales
+                        const mensajeDDA = `
+                            <h2>Derechos de Desarrollo Adicionales</h2>
+                            <p>Los derechos de desarrollo adicionales permiten a los propietarios de predios con uso <strong>${atributosZonificacion['Uso del suelo']}</strong> obtener beneficios urbanos por encima de los derechos de desarrollo base, por ejemplo el aumento en las alturas y niveles de construcción. Para obtener estos derechos, se requiere un Dictamen de Uso de Suelo y el pago correspondiente según la Ley de Ingresos vigente.</p>
+                        `;
+
+                        // Agregar el mensaje al bloque de normas generales
+                        document.getElementById('info-norm-general-block').innerHTML += mensajeDDA;
+                    } else {
+                        // No se encontró coincidencia
+                        document.getElementById('info-norm-general-block').innerHTML = '<p>Predio no compatible con la norma "Derechos de Desarrollo Adicionales"</p>';
                     }
                 }
 
+
+                // Extraer la información basada en el uso del suelo del predio
+                const usoSuelo = atributosZonificacion['Clave de uso general'];
+                console.log("Clave de uso general:", usoSuelo); // Debug: Verificar la clave de uso general
+            
+                // Inicializar un arreglo para almacenar las compatibilidades
+                const compatibilidades = [];
+            
+                // Verificar si el JSON tiene la propiedad 'compatibilidades'
+                if (!data.compatibilidades) {
+                    console.error("El JSON no tiene la propiedad 'compatibilidades'");
+                } else {
+                    // Recorrer todas las categorías y subcategorías en el JSON
+                    for (const categoria in data.compatibilidades) {
+                        for (const subcategoria in data.compatibilidades[categoria]) {
+                            // Verificar si el uso del suelo (usoSuelo) es compatible (tiene true)
+                            const esCompatible = data.compatibilidades[categoria][subcategoria][usoSuelo];
+                            console.log("Compatibilidad para", usoSuelo, "en", categoria, "-", subcategoria, ":", esCompatible); // Debug: Verificar compatibilidad
+            
+                            if (esCompatible === true) {
+                                compatibilidades.push({
+                                    'Categoría': categoria,
+                                    'Subcategoría': subcategoria
+                                });
+                            }
+                        }
+                    }
+                }
+            
                 // Almacenar en una variable global
                 atributosCompatibilidades = {
                     'Clave de uso general': usoSuelo,
                     'Compatibilidades': compatibilidades
                 };
-
-                console.log("Compatibilidades almacenadas:", atributosCompatibilidades);
-
+            
+                console.log("Compatibilidades almacenadas:", atributosCompatibilidades); // Debug: Verificar compatibilidades encontradas
+            
                 // **ACTUALIZACIÓN AUTOMÁTICA DEL BLOQUE DE COMPATIBILIDADES**
                 if (atributosCompatibilidades && atributosCompatibilidades.Compatibilidades.length > 0) {
                     let compatibilidadInfo = '<h2>Usos Compatibles</h2>';
-
+            
                     // Agrupar las subcategorías por categoría
                     const categorias = {};
                     atributosCompatibilidades.Compatibilidades.forEach(item => {
@@ -357,7 +424,7 @@ map.on('load', () => {
                         }
                         categorias[item.Categoría].push(item.Subcategoría);
                     });
-
+            
                     // Generar el HTML para cada categoría y sus subcategorías
                     for (const [categoria, subcategorias] of Object.entries(categorias)) {
                         compatibilidadInfo += `
@@ -372,10 +439,10 @@ map.on('load', () => {
                             </div>
                         `;
                     }
-
+            
                     // Insertar el HTML en el bloque de compatibilidades
                     document.getElementById('info-compatible-block').innerHTML = compatibilidadInfo;
-
+            
                     // Agregar eventos para mostrar/ocultar subcategorías
                     document.querySelectorAll('.categoria-header').forEach(header => {
                         header.addEventListener('click', () => {
@@ -393,7 +460,7 @@ map.on('load', () => {
                 } else {
                     document.getElementById('info-compatible-block').innerHTML = '<p>No se encontraron usos compatibles para este predio.</p>';
                 }
-
+            
             } catch (error) {
                 console.error("Error al obtener compatibilidades:", error);
             }
@@ -417,13 +484,13 @@ map.on('load', () => {
             ////////////////////////////////////////////////////
             // script.js
             document.getElementById('point-info-option-a').addEventListener('click', () => {
-                if (!atributosZonificacion || !atributosCompatibilidades) {
+                if (!atributosZonificacion || !atributosCompatibilidades || !selectedCoordinates) {
                     alert("No hay información disponible para generar el PDF.");
                     return;
                 }
-
+            
                 // Llamar a la función global generarPDF
-                generarPDF(atributosZonificacion, atributosCompatibilidades);
+                generarPDF(atributosZonificacion, atributosCompatibilidades, selectedCoordinates);
             });
         }
     });
@@ -441,6 +508,69 @@ map.on('load', () => {
             map.setFilter('catastro-highlight', ['==', 'ID', '']); // Ocultar el borde
         }
     });
+});
+
+
+// Agregar evento al botón 'predio-option-d'
+document.getElementById('predio-option-d').addEventListener('click', async () => {
+    try {
+        // Mostrar el bloque antes de cargar el contenido
+        handleButtonClick('info-norm-especifica-block');
+
+        // Limpiar el bloque de información
+        document.getElementById('info-norm-especifica-block').innerHTML = '';
+
+        // Realizar la solicitud fetch para obtener el JSON
+        const response = await fetch('datos/PMDUQ-normatividad.json'); // Reemplaza con la ruta real
+        const data = await response.json();
+
+        // Verificar si el JSON tiene la propiedad 'norm-especificas'
+        if (!data['norm-especificas']) {
+            console.error("El JSON no tiene la propiedad 'norm-especificas'");
+            return;
+        }
+
+        // Obtener las normas específicas
+        const normasEspecificas = data['norm-especificas'];
+
+        // Crear el HTML para mostrar las normas específicas
+        let normasHTML = '<h2>Normas Específicas</h2>';
+
+        normasEspecificas.forEach(norma => {
+            normasHTML += `
+                <div class="norma">
+                    <div class="norma-header">
+                        <span class="norma-titulo">${norma.Título}</span>
+                        <span class="toggle-arrow">▼</span>
+                    </div>
+                    <div class="norma-descripcion" style="display: none;">
+                        <p>${norma.Descripción}</p>
+                    </div>
+                </div>
+            `;
+        });
+
+        // Insertar el HTML en el bloque de normas específicas
+        document.getElementById('info-norm-especifica-block').innerHTML = normasHTML;
+
+        // Agregar eventos para mostrar/ocultar la descripción al hacer clic en el título
+        document.querySelectorAll('.norma-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const descripcion = header.nextElementSibling;
+                const toggleArrow = header.querySelector('.toggle-arrow');
+                if (descripcion.style.display === 'none' || descripcion.style.display === '') {
+                    descripcion.style.display = 'block'; // Mostrar descripción
+                    toggleArrow.textContent = '▲'; // Cambiar el ícono a una flecha hacia arriba
+                } else {
+                    descripcion.style.display = 'none'; // Ocultar descripción
+                    toggleArrow.textContent = '▼'; // Cambiar el ícono a una flecha hacia abajo
+                }
+            });
+        });
+
+    } catch (error) {
+        console.error("Error al cargar las normas específicas:", error);
+    }
 });
 
 ////////////////////////////////////////////
@@ -467,6 +597,14 @@ document.getElementById('predio-option-a').addEventListener('click', () => {
 
 document.getElementById('predio-option-b').addEventListener('click', () => {
     handleButtonClick('info-compatible-block'); // Bloque para predio-option-b (cambia el ID según corresponda)
+});
+
+document.getElementById('predio-option-c').addEventListener('click', () => {
+    handleButtonClick('info-norm-general-block'); // Bloque para predio-option-c (Normas Generales)
+});
+
+document.getElementById('predio-option-d').addEventListener('click', () => {
+    handleButtonClick('info-norm-especifica-block'); // Bloque para predio-option-d (Normas Específicas)
 });
 
 ////////////////////////////////////////////
@@ -610,18 +748,7 @@ menuToggle.addEventListener('click', function () {
     });
 });
 
-// Función para manejar el clic en los `submenu-item` específicos
-var submenuItems = document.querySelectorAll('.submenu-item');
-submenuItems.forEach(function (item) {
-    item.addEventListener('click', function () {
-        // Obtener el texto del botón clicado
-        var selectedTitle = this.textContent;
-        // Mostrar el info-container
-        infoContainer.style.display = 'block';
-        // Asignar el texto al infoContainer
-        infoContainer.innerHTML = `<h3>${selectedTitle}</h3>`;
-    });
-});
+
 
 //////////////////////////////////////////////////
 /////// RESPUESTA AL CLICK DE LOS TABS ///////////

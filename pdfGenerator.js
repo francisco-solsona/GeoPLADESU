@@ -139,21 +139,8 @@ function agregarTablaCompatibilidades(doc, categorias, y) {
     return y;
 }
 
-function generarPDF(atributosZonificacion, atributosCompatibilidades) {
+function generarPDF(atributosZonificacion, atributosCompatibilidades, selectedCoordinates) {
     const doc = new jspdf.jsPDF();
-
-    // Obtener el centro y el zoom del mapa actual
-    const center = map.getCenter();
-    const zoom = map.getZoom();
-
-    console.log("Centro del mapa:", center.lng, center.lat);
-    console.log("Zoom del mapa:", zoom);
-
-    // Usar el estilo personalizado que incluye la capa de zonificación
-    const customStyleId = 'cm6fecyps001q01qqhx0n7dub'; // Solo el ID del estilo
-    const staticMapUrl = `https://api.mapbox.com/styles/v1/paco-solsona/${customStyleId}/static/${center.lng},${center.lat},${zoom}/600x400@2x?access_token=${mapboxgl.accessToken}`;
-
-    console.log("URL de la imagen estática:", staticMapUrl);
 
     // Aplicar estilos generales
     aplicarEstilos(doc);
@@ -166,6 +153,60 @@ function generarPDF(atributosZonificacion, atributosCompatibilidades) {
     const logoUrl = 'img/pladesu-logo.png'; // Ruta del logo
     doc.addImage(logoUrl, 'PNG', 10, 5, 45, 15); // (x, y, ancho, alto)
 
+    // Agregar la leyenda en la barra gris
+    doc.setFontSize(8); // Tamaño de fuente pequeño
+    doc.setTextColor(0, 0, 0); // Color negro
+    doc.setFont("helvetica", "bold"); // Fuente normal
+    const leyenda = "*Versión de divulgación e información, no produce efectos jurídicos";
+    const textWidth = doc.getStringUnitWidth(leyenda) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const textX = pageWidth - textWidth - 10; // Alinear a la derecha con un margen de 10px
+    doc.text(leyenda, textX, 15); // (x, y)
+
+    let y = 35; // Posición vertical inicial después del logo
+
+    // Agregar un título al PDF
+    agregarTitulo(doc, "Resumen del Predio", y);
+    y = verificarDesbordamiento(doc, y + 10); // Verificar desbordamiento después del título
+
+    // Agregar la información de zonificación
+    y = verificarDesbordamiento(doc, y); // Verificar desbordamiento
+    agregarSubtitulo(doc, "Información de Zonificación:", y);
+    y += 10;
+
+    for (const [clave, valor] of Object.entries(atributosZonificacion)) {
+        y = verificarDesbordamiento(doc, y); // Verificar desbordamiento
+
+        // Agregar el nombre del atributo en negritas
+        doc.setFont("helvetica", "bold"); // Fuente en negritas
+        y = agregarTextoConSalto(doc, `${clave}:`, 10, y, 80); // Nombre de la columna
+        doc.setFont("helvetica", "normal"); // Restaurar la fuente a normal
+
+        // Agregar el valor del atributo
+        y = agregarTextoConSalto(doc, `${valor}`, 90, y - 10, 100, [100, 100, 100]); // Valor
+    }
+
+    // Agregar una nueva página para la imagen estática y los atributos de compatibilidades
+    doc.addPage();
+
+    // Reiniciar la posición vertical en la nueva página
+    y = 30;
+
+    // Obtener el centro y el zoom del mapa actual
+    const center = map.getCenter();
+    const zoom = map.getZoom();
+
+    console.log("Centro del mapa:", center.lng, center.lat);
+    console.log("Zoom del mapa:", zoom);
+
+    // Usar el estilo personalizado que incluye la capa de zonificación
+    const customStyleId = 'cm6fecyps001q01qqhx0n7dub'; // Solo el ID del estilo
+
+    // URL de la imagen estática con un marcador en el predio seleccionado
+    const staticMapUrl = `https://api.mapbox.com/styles/v1/paco-solsona/${customStyleId}/static/${selectedCoordinates.lng},${selectedCoordinates.lat},16/600x400@2x?access_token=${mapboxgl.accessToken}&overlay=pin-s+ff0000(${selectedCoordinates.lng},${selectedCoordinates.lat})`;
+
+    console.log("URL de la imagen estática con marcador:", staticMapUrl);
+
     // Cargar la imagen estática del mapa y agregarla al PDF
     const img = new Image();
     img.src = staticMapUrl;
@@ -173,35 +214,9 @@ function generarPDF(atributosZonificacion, atributosCompatibilidades) {
         console.log("Imagen estática cargada correctamente.");
         const imgWidth = doc.internal.pageSize.getWidth() - 20; // Ancho de la imagen (margen de 10px a cada lado)
         const imgHeight = (img.height * imgWidth) / img.width; // Mantener la proporción de la imagen
-        doc.addImage(img, 'PNG', 10, 30, imgWidth, imgHeight); // (x, y, ancho, alto)
+        doc.addImage(img, 'PNG', 10, y, imgWidth, imgHeight); // (x, y, ancho, alto)
 
-        let y = 30 + imgHeight + 10; // Posición vertical inicial después de la imagen
-
-        // Agregar un título al PDF (debajo de la imagen)
-        agregarTitulo(doc, "Resumen del Predio", y);
-        y = verificarDesbordamiento(doc, y + 10); // Verificar desbordamiento después del título
-
-        // Agregar la información de zonificación
-        y = verificarDesbordamiento(doc, y); // Verificar desbordamiento
-        agregarSubtitulo(doc, "Información de Zonificación:", y);
-        y += 10;
-
-        for (const [clave, valor] of Object.entries(atributosZonificacion)) {
-            y = verificarDesbordamiento(doc, y); // Verificar desbordamiento
-
-            // Agregar el nombre del atributo en negritas
-            doc.setFont("helvetica", "bold"); // Fuente en negritas
-            y = agregarTextoConSalto(doc, `${clave}:`, 10, y, 80); // Nombre de la columna
-            doc.setFont("helvetica", "normal"); // Restaurar la fuente a normal
-
-            // Agregar el valor del atributo
-            y = agregarTextoConSalto(doc, `${valor}`, 90, y - 10, 100, [100, 100, 100]); // Valor
-        }
-
-        y += 10;
-
-        // Verificar si hay suficiente espacio para la sección "Usos Compatibles"
-        y = verificarDesbordamiento(doc, y + 30); // Agregar un margen adicional
+        y += imgHeight + 10; // Posición vertical después de la imagen
 
         // Agregar la información de compatibilidades
         agregarSubtitulo(doc, "Usos Compatibles:", y);

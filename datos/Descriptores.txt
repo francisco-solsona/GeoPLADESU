@@ -1,0 +1,17 @@
+Aquí se describen los usos de cada hoja dentro del JSON
+
+Usos y Compatibilidades
+	- compatibilidades: Usos y compatibilidades de la zonificación en cuestión.
+
+Normas Generales 
+
+	De la Compatibilidad de Giros
+		- cg-pb-activas: Los predios clasificados con uso {'Uso del suelo' del predio seleccionado} pueden solicitar autorización para desarrollar plantas bajas activas con hasta dos locales comerciales compatibles con el uso de suelo Habitacional Mixto (HM), cuya superficie máxima conjunta será de {'SUP_MAX' del JSON} de construcción, siempre y cuando estén acompañados de vivienda en los niveles subsecuentes.
+
+	Derechos de Desarrollo Adicionales
+		- dda-niveles-vialidad: Niveles adicionales de acuerdo con el ancho de la calle.
+		- dda-restr-colonias: Colonias donde están prohibidos los DDA.
+		- dda-restr-usos: Usos en la zonificación que no pueden acceder a los DDA.
+
+Normas Específicas
+	

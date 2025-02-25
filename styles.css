@@ -385,8 +385,6 @@ a:visited {
 /* //////////////////////////////////////
 / FUNCION PARA MENU DE COMPATIBILIDADES /
 ////////////////////////////////////// */
-/* Estilos para las categorías y subcategorías */
-/* Estilos para el encabezado de la categoría */
 .categoria-header {
     display: flex;
     justify-content: space-between;
@@ -399,34 +397,60 @@ a:visited {
     border-top-left-radius: 15px; 
     border-top-right-radius: 15px;
 }
-
 .categoria-header:hover {
     background-color: #555;
 }
-
-/* Estilos para el texto de la categoría */
 .categoria-texto {
     flex-grow: 1; /* Ocupa el espacio disponible */
     font-size: 14px;
 }
-
-/* Estilos para el ícono de flecha */
 .toggle-arrow {
     margin-left: 10px;
     font-size: 12px;
 }
-
-/* Estilos para la lista de subcategorías */
 .subcategoria-list {
     list-style-type: none;
     padding-left: 20px;
     margin-top: 5px;
-    font-size: 14px;
+    
 }
-
 .subcategoria-list li {
     padding: 5px 0;
     border-bottom: 1px solid #eee;
+    font-size: 12px;
+}
+/* //////////////////////////////////////
+/ FUNCION PARA MENU DE NORMAS GENERALES /
+////////////////////////////////////// */
+
+/* Estilos para el encabezado de la norma */
+.norma-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #222222;
+    border-bottom: 1px solid #444;
+    cursor: pointer;
+    font-weight: bold;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+.norma-header:hover {
+    background-color: #555;
+}
+.norma-titulo {
+    flex-grow: 1; /* Ocupa el espacio disponible */
+    font-size: 14px;
+}
+.norma-descripcion {
+    padding: 10px;
+    background-color: #333;
+    border-top: 1px solid #444;
+    line-height: 1.5;
+}
+.norma-descripcion p{
+    font-size: 12px;
 }
 /* -------------------------- */
 /*   ESTILOS PARA LA ESCALA   */
