@@ -339,10 +339,10 @@ map.on('load', () => {
                     if (normaEncontrada) {
                         // Mostrar el mensaje en el bloque de normas generales
                         // Mostrar el subtítulo y el mensaje en el bloque de normas generales
-        const mensaje = `
-        <h2>Compatibilidad de Giros: Plantas Bajas Activas</h2>
-        <p>Los predios clasificados con uso <strong>${atributosZonificacion['Uso del suelo']}</strong> pueden solicitar autorización para desarrollar plantas bajas activas con hasta dos locales comerciales compatibles con el uso de suelo <strong>Habitacional Mixto (HM)</strong>, cuya superficie máxima conjunta será de <strong>${normaEncontrada.SUP_MAX} m²</strong> de construcción, siempre y cuando estén acompañados de vivienda en los niveles subsecuentes.</p>
-    `;
+                        const mensaje = `
+                        <h2>Compatibilidad de Giros: Plantas Bajas Activas</h2>
+                        <p>Los predios clasificados con uso <strong>${atributosZonificacion['Uso del suelo']}</strong> pueden solicitar autorización para desarrollar plantas bajas activas con hasta dos locales comerciales compatibles con el uso de suelo <strong>Habitacional Mixto (HM)</strong>, cuya superficie máxima conjunta será de <strong>${normaEncontrada.SUP_MAX} m²</strong> de construcción, siempre y cuando estén acompañados de vivienda en los niveles subsecuentes.</p>
+                        `;
 
                         document.getElementById('info-norm-general-block').innerHTML = `<p>${mensaje}</p>`;
                     } else {
@@ -369,6 +369,30 @@ map.on('load', () => {
 
                         // Agregar el mensaje al bloque de normas generales
                         document.getElementById('info-norm-general-block').innerHTML += mensajeDDA;
+
+                        // Verificar si el JSON tiene la propiedad 'dda-restr-colonias'
+                        if (!data['dda-restr-colonias']) {
+                            console.error("El JSON no tiene la propiedad 'dda-restr-colonias'");
+                        } else {
+                            // Obtener la lista de colonias restringidas
+                            const coloniasRestringidas = data['dda-restr-colonias'];
+
+                            // Verificar si hay colonias restringidas
+                            if (coloniasRestringidas.length > 0) {
+                                // Crear un texto separado por comas con las colonias restringidas
+                                const textoColonias = coloniasRestringidas.map(colonia => colonia.Colonias).join(', ');
+
+                                // Mostrar el mensaje adicional con el texto de colonias
+                                const mensajeColonias = `
+                                    <p>Los Derechos de Desarrollo Adicionales <strong>no aplican</strong> en las colonias: <strong>${textoColonias}</strong>.</p>
+                                `;
+
+                                // Agregar el mensaje al bloque de normas generales
+                                document.getElementById('info-norm-general-block').innerHTML += mensajeColonias;
+                            } else {
+                                console.log("No hay colonias restringidas en el JSON.");
+                            }
+                        }
                     } else {
                         // No se encontró coincidencia
                         document.getElementById('info-norm-general-block').innerHTML = '<p>Predio no compatible con la norma "Derechos de Desarrollo Adicionales"</p>';
