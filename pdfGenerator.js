@@ -202,8 +202,8 @@ function generarPDF(atributosZonificacion, atributosCompatibilidades, selectedCo
     // Usar el estilo personalizado que incluye la capa de zonificación
     const customStyleId = 'cm6fecyps001q01qqhx0n7dub'; // Solo el ID del estilo
 
-    // URL de la imagen estática con un marcador en el predio seleccionado
-    const staticMapUrl = `https://api.mapbox.com/styles/v1/paco-solsona/${customStyleId}/static/${selectedCoordinates.lng},${selectedCoordinates.lat},16/600x400@2x?access_token=${mapboxgl.accessToken}&overlay=pin-s+ff0000(${selectedCoordinates.lng},${selectedCoordinates.lat})`;
+    // URL de la imagen estática con un marcador en el centro de la imagen
+    const staticMapUrl = `https://api.mapbox.com/styles/v1/paco-solsona/${customStyleId}/static/pin-s+ff0000(${selectedCoordinates.lng},${selectedCoordinates.lat})/${selectedCoordinates.lng},${selectedCoordinates.lat},${zoom}/600x400@2x?access_token=${mapboxgl.accessToken}`;
 
     console.log("URL de la imagen estática con marcador:", staticMapUrl);
 
