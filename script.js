@@ -39,7 +39,9 @@ const enlacesDocumentos = {
 
 // Variable para almacenar el ID del polígono seleccionado de catastro
 let selectedFeatureId = null;
-let selectedCoordinates = null; // Variable para almacenar las coordenadas del predio seleccionado
+// Variable para almacenar las coordenadas del predio seleccionado
+let selectedCoordinates = null; 
+
 // Variable global para almacenar los atributos de zonificación
 let atributosZonificacion = {};
 let atributosCatastro = {};
@@ -61,7 +63,6 @@ const globalZoningLayer = 'C22014_Z02_COMPLETA-4k0xdy';
 
 // Función para volver a cargar la capa personalizada
 function addCustomLayers() {
-
     // Primero vamos a llamar todos los sources
     if (!map.getSource('catastro')) {
         map.addSource('catastro', {
@@ -100,7 +101,6 @@ function addCustomLayers() {
             }
         });
     }
-
     // Agregar la nueva capa 'C22_QRO_Z02_2022-dqkkpw'
     if (!map.getSource('zonificacion')) {
         map.addSource('zonificacion', {
@@ -119,32 +119,15 @@ function addCustomLayers() {
             'maxzoom': 22,
             'paint': {
                 'fill-color': ['get', 'Color_HEX'],
-                'fill-opacity': 0.7  // Opcional, para controlar la opacidad del relleno
+                'fill-opacity': 0.7 // Opcional, para controlar la opacidad del relleno
             }
         });
     }
-    
     // Agregar la nueva capa 'C22_QRO_Z02_2022-dqkkpw'
     if (!map.getSource('censo')) {
         map.addSource('censo', {
             type: 'vector',
             url:  globalCensoUrl // URL del vector layer 'C22_QRO_Z02_2022-dqkkpw'
-        });
-    }
-    if (!map.getLayer('censo-line-layer')) {
-        map.addLayer({
-            'id': 'censo-line-layer',
-            'type': 'line',  // Cambiado de 'circle' a 'fill' para trabajar con polígonos
-            'source': 'censo',  // Asegúrate de que el nombre de la fuente coincida
-            'source-layer': globalCensoLayer, // Asegúrate de que el nombre de la capa coincida
-            'slot': 'top',
-            'minzoom': 15,
-            'maxzoom': 22,
-            'paint': {
-                'line-color': '#000000',  // Bordes en color negro
-                'line-width': 0,  // Grosor de la línea
-                'line-opacity': 0  // Opcional, para controlar la opacidad del relleno
-            }
         });
     }
     if (!map.getLayer('censo-fill-layer')) {
@@ -162,6 +145,51 @@ function addCustomLayers() {
         });
     }
 
+    // Configurar eventos para resaltar el polígono seleccionado
+    map.on('mouseenter', 'catastro-fill-layer', () => {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', 'catastro-fill-layer', () => {
+        map.getCanvas().style.cursor = '';
+    });
+
+    // Agregar la capa de extrusión para resaltar el polígono seleccionado
+    if (!map.getLayer('catastro-extrusion')) {
+        map.addLayer({
+            'id': 'catastro-extrusion',
+            'type': 'fill-extrusion',
+            'source': 'catastro',
+            'source-layer': globalCatastroLayer,
+            'layout': {},
+            'paint': {
+                'fill-extrusion-color': '#ff0000',
+                'fill-extrusion-height': [
+                    'case',
+                    ['==', ['get', 'ID'], selectedFeatureId], 1000,
+                    0
+                ],
+                'fill-extrusion-opacity': 0.8
+            },
+            'filter': ['==', 'ID', '']
+        });
+    }
+
+    // Agregar la capa de línea para resaltar el borde del polígono seleccionado
+    if (!map.getLayer('catastro-highlight')) {
+        map.addLayer({
+            'id': 'catastro-highlight',
+            'type': 'line',
+            'source': 'catastro',
+            'source-layer': globalCatastroLayer,
+            'layout': {},
+            'paint': {
+                'line-color': '#000000',
+                'line-width': 5
+            },
+            'filter': ['==', 'ID', '']
+        });
+    }
+
 }
 
 // Escuchar cuando el estilo del mapa cambia y volver a añadir las capas
@@ -176,48 +204,6 @@ map.on('styledata', () => {
 // Llamar a la función al cargar el mapa
 map.on('load', () => {
     addCustomLayers();
-
-    // Cambiar el cursor al interactuar con la capa
-    map.on('mouseenter', 'catastro-fill-layer', () => {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-
-    map.on('mouseleave', 'catastro-fill-layer', () => {
-        map.getCanvas().style.cursor = '';
-    });
-
-    // Agregar una nueva capa de extrusión para resaltar el polígono seleccionado
-    map.addLayer({
-        'id': 'catastro-extrusion',
-        'type': 'fill-extrusion',
-        'source': 'catastro',
-        'source-layer': globalCatastroLayer,
-        'layout': {},
-        'paint': {
-            'fill-extrusion-color': '#ff0000', // Color de resaltado
-            'fill-extrusion-height': [
-                'case',
-                ['==', ['get', 'ID'], selectedFeatureId], 1000, // Si es el seleccionado, elevarlo
-                0 // De lo contrario, mantenerlo plano
-            ],
-            'fill-extrusion-opacity': 0.8
-        },
-        'filter': ['==', 'ID', ''] // Inicialmente, no muestra nada
-    });
-
-    // Agregar una capa de línea para resaltar el borde del polígono seleccionado
-    map.addLayer({
-        'id': 'catastro-highlight',
-        'type': 'line',
-        'source': 'catastro',
-        'source-layer': globalCatastroLayer,
-        'layout': {},
-        'paint': {
-            'line-color': '#000000',
-            'line-width': 5
-        },
-        'filter': ['==', 'ID', ''] // Inicialmente no muestra nada
-    });
     
     // Evento de clic en la capa catastro-fill-layer
     map.on('click', 'catastro-fill-layer', async (e) => {
@@ -488,6 +474,7 @@ map.on('load', () => {
             } catch (error) {
                 console.error("Error al obtener compatibilidades:", error);
             }
+            
 
 
             ////////////////////////////////////////////////////
@@ -715,6 +702,11 @@ let currentStyleIndex = 0; // Índice para el estilo actual
 document.getElementById('base-map-toggle').addEventListener('click', () => {
     currentStyleIndex = (currentStyleIndex + 1) % mapStyles.length; // Alterna entre estilos
     map.setStyle(mapStyles[currentStyleIndex]); // Cambia el estilo del mapa
+
+    // Escuchar el evento 'styledata' para volver a agregar las capas personalizadas
+    map.once('styledata', () => {
+        addCustomLayers();
+    });
 });
 
 //////////////////////////////////////
@@ -886,7 +878,7 @@ map.addControl(geocoder);
 ///////////////////////////////////////////////////////
 
 // URL a compartir (puedes personalizarla según la página que desees compartir)
-const shareUrl = encodeURIComponent("https://www.tupagina.com");
+const shareUrl = encodeURIComponent("https://francisco-solsona.github.io/GeoPLADESU/");
 const shareText = encodeURIComponent("¡Mira este increíble contenido!");
 
 // Compartir en LinkedIn

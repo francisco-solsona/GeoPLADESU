@@ -181,7 +181,6 @@ function generarPDF(atributosZonificacion, atributosCompatibilidades, selectedCo
         doc.setFont("helvetica", "bold"); // Fuente en negritas
         y = agregarTextoConSalto(doc, `${clave}:`, 10, y, 80); // Nombre de la columna
         doc.setFont("helvetica", "normal"); // Restaurar la fuente a normal
-
         // Agregar el valor del atributo
         y = agregarTextoConSalto(doc, `${valor}`, 90, y - 10, 100, [100, 100, 100]); // Valor
     }
@@ -194,16 +193,15 @@ function generarPDF(atributosZonificacion, atributosCompatibilidades, selectedCo
 
     // Obtener el centro y el zoom del mapa actual
     const center = map.getCenter();
-    const zoom = map.getZoom();
 
     console.log("Centro del mapa:", center.lng, center.lat);
-    console.log("Zoom del mapa:", zoom);
-
     // Usar el estilo personalizado que incluye la capa de zonificación
-    const customStyleId = 'cm6fecyps001q01qqhx0n7dub'; // Solo el ID del estilo
+    // Estilo con catastro y zonificación: 'cm7p5osav01e901qo3lqv4tft'
+    // Estilo con imágen de satélite: 'cm69nxu0w001h01qrejoc0r8a'
+    const customStyleId = 'cm69nxu0w001h01qrejoc0r8a'; // Solo el ID del estilo
 
     // URL de la imagen estática con un marcador en el centro de la imagen
-    const staticMapUrl = `https://api.mapbox.com/styles/v1/paco-solsona/${customStyleId}/static/pin-s+ff0000(${selectedCoordinates.lng},${selectedCoordinates.lat})/${selectedCoordinates.lng},${selectedCoordinates.lat},${zoom}/600x400@2x?access_token=${mapboxgl.accessToken}`;
+    const staticMapUrl = `https://api.mapbox.com/styles/v1/paco-solsona/${customStyleId}/static/pin-s+ff0000(${selectedCoordinates.lng},${selectedCoordinates.lat})/${selectedCoordinates.lng},${selectedCoordinates.lat},16.5/600x400@2x?access_token=${mapboxgl.accessToken}`;
 
     console.log("URL de la imagen estática con marcador:", staticMapUrl);
 
